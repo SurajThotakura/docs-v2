@@ -57,19 +57,19 @@ const oasConfigs = [
   //   SnippetResolver: require("@fern-api/auth0-myorganization-snippets")
   //     .SnippetResolver,
   // },
-  // {
-  //   // TODO: this needs to be a location in `node_modoles`
-  //   inputFile: "management-api-oas.json",
-  //   outputFile: "management-api-oas.json",
-  //   docRootDirectory: "management/v2",
-  //   docSectionNameMap: {
-  //     en: "Management API",
-  //     "fr-ca": "Management API",
-  //     "ja-jp": "Management API",
-  //   },
-  //   SnippetResolver: require("@fern-api/auth0-management-snippets")
-  //     .SnippetResolver,
-  // },
+  {
+  //   // TODO: this needs to be a location in `node_modules`
+    inputFile: "node_modules/@a0-mgmt-api/oas/openapi-3.1.json",
+    outputFile: "management-api-oas.json",
+    docRootDirectory: "management/v2",
+    docSectionNameMap: {
+      en: "Management API",
+      "fr-ca": "Management API",
+      "ja-jp": "Management API",
+    },
+    SnippetResolver: require("@fern-api/auth0-management-snippets")
+      .SnippetResolver,
+  },
   // {
   //   // TODO: this needs to be a location in `node_modoles`
   //   inputFile: "authentication-api-oas.json",
