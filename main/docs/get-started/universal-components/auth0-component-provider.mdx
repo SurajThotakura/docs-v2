@@ -189,7 +189,7 @@ Next.js applications use proxy mode for server-side authentication. These additi
     </tr>
     <tr>
       <td><code>proxyConfig</code></td>
-      <td><code>{ baseUrl: string }</code></td>
+      <td><code>&#123; baseUrl: string &#125;</code></td>
       <td>Yes</td>
       <td>Proxy configuration. <code>baseUrl</code> is the URL to your authentication proxy server (e.g., "/api/auth"). API calls append to this base path.</td>
     </tr>
@@ -284,7 +284,7 @@ Use the following properties to align the Universal Components with your applica
     <tr>
       <td><code>variables</code></td>
       <td><code>StylingVariables</code></td>
-      <td><code>{}</code></td>
+      <td><code>&#123;&#125;</code></td>
       <td>CSS custom properties for common, light, and dark themes</td>
     </tr>
   </tbody>
@@ -475,7 +475,7 @@ Fine-tune TanStack Query caching for every Auth0 component. Defaults keep data f
 </table>
 
 <Callout icon="file-lines" color="#0EA5E9" iconType="regular">
-**Disable caching:** Pass `{ enabled: false }`. This automatically sets `staleTime` to 0 and shortens the garbage-collection window to 5 seconds so every render fetches fresh data.
+**Disable caching:** Pass `&#123; enabled: false &#125;`. This automatically sets `staleTime` to 0 and shortens the garbage-collection window to 5 seconds so every render fetches fresh data.
 
 **Pro tip:** Keep caching enabled but shorten `staleTime` when integrating with admin panels that require near-real-time updates.
 
