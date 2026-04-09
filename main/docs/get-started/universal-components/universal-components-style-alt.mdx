@@ -15,15 +15,21 @@ Auth0 Universal Components are built on a flexible design system that utilizes [
 
 This architecture ensures that your identity flows look and feel like native parts of your application.
 
-## Get started
+## CSS setup
+
+Select your CSS integration path. This choice determines your import and the variable names you use for color overrides throughout this guide.
+
+<Tabs>
+  <Tab title="CSS">
+
+### Get started
+
+Import the pre-built scoped stylesheet. This path works with any framework and alongside any existing Tailwind version (or none at all).
 
 <Tabs>
   <Tab title="React (SPA)">
 
-<Tabs>
-  <Tab title="Without Tailwind">
-
-Import the scoped stylesheet in your application entry point (e.g., `main.tsx`):
+Import in your application entry point (e.g., `main.tsx`):
 
 ```tsx
 import "@auth0/universal-components-react/styles";
@@ -42,59 +48,9 @@ Done. All buttons, links, and active states now use your brand.
 
   </Tab>
 
-  <Tab title="Tailwind v4">
-
-Auth0 Universal Components work natively with Tailwind v4 (including shadcn). Instead of importing a pre-built stylesheet, your own Tailwind build generates the component CSS. Requires Tailwind v4. If you're on Tailwind v3, use the **Without Tailwind** tab.
-
-1. Add the imports to your CSS file:
-
-```css
-@import "tailwindcss";
-@import "@auth0/universal-components-react/tailwind";
-@import "@auth0/universal-components-core/styles/globals.css";
-```
-
-2. Map your theme variables. If you're using shadcn, this is already in your CSS. Otherwise, add the following `@theme` block:
-
-```css
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-border: var(--border);
-  --color-ring: var(--ring);
-}
-```
-
-3. Define your brand color:
-
-```css
-:root {
-  --primary: #4f46e5; /* your brand color */
-  --primary-foreground: #ffffff; /* text on buttons */
-}
-```
-
-Done. All buttons, links, and active states now use your brand.
-
-  </Tab>
-</Tabs>
-
-  </Tab>
-
   <Tab title="Next.js">
 
-<Tabs>
-  <Tab title="Without Tailwind">
-
-Import the scoped stylesheet in your root `layout.tsx`:
+Import in your root `layout.tsx`:
 
 ```tsx
 import "@auth0/universal-components-react/styles";
@@ -114,150 +70,11 @@ Add your brand color:
 Done. All buttons, links, and active states now use your brand.
 
   </Tab>
-
-  <Tab title="Tailwind v4">
-
-Auth0 Universal Components work natively with Tailwind v4 (including shadcn). Instead of importing a pre-built stylesheet, your own Tailwind build generates the component CSS. Requires Tailwind v4. If you're on Tailwind v3, use the **Without Tailwind** tab.
-
-1. Add the imports to your CSS file:
-
-```css
-@import "tailwindcss";
-@import "@auth0/universal-components-react/tailwind";
-@import "@auth0/universal-components-core/styles/globals.css";
-```
-
-2. Map your theme variables. If you're using shadcn, this is already in your CSS. Otherwise, add the following `@theme` block:
-
-```css
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-border: var(--border);
-  --color-ring: var(--ring);
-}
-```
-
-3. Define your brand color:
-
-```css
-:root {
-  --primary: #4f46e5; /* your brand color */
-  --primary-foreground: #ffffff; /* text on buttons */
-}
-```
-
-Set up `Auth0ComponentProvider` with proxy mode in your root `layout.tsx`. See [Configure Auth0ComponentProvider](/docs/get-started/universal-components/auth0-component-provider) for the full Next.js layout example.
-
-Done. All buttons, links, and active states now use your brand.
-
-  </Tab>
 </Tabs>
 
-  </Tab>
-</Tabs>
+### Color variable reference
 
----
-
-## Customization overview
-
-Auth0 Universal Components support four customization methods. Use the one that fits your use case, or combine them — each layer overrides the previous.
-
-<table class="table">
-  <thead>
-    <tr>
-      <th>Method</th>
-      <th>Scope</th>
-      <th>When to use</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><strong>Theme presets</strong></td>
-      <td>Global</td>
-      <td>Switch between built-in design variants (default, minimal, rounded)</td>
-    </tr>
-    <tr>
-      <td><strong>CSS variables</strong></td>
-      <td>Global</td>
-      <td>Simple brand customization in your stylesheet</td>
-    </tr>
-    <tr>
-      <td><strong><code>themeSettings.variables</code></strong></td>
-      <td>Global</td>
-      <td>Programmatic overrides — dynamic theming, per-tenant branding</td>
-    </tr>
-    <tr>
-      <td><strong><code>styling</code> prop</strong></td>
-      <td>Per-component</td>
-      <td>Targeted overrides for a specific component instance</td>
-    </tr>
-  </tbody>
-</table>
-
-<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
-**Naming rule:** `themeSettings.variables` and the `styling` prop always use `--auth0-*` prefixed names for colors (e.g., `--auth0-primary`), regardless of whether you use Tailwind. CSS stylesheet overrides use `--auth0-*` without Tailwind, or bare `--primary` with Tailwind.
-
-</Callout>
-
----
-
-## Theme presets
-
-Pass `themeSettings` to `Auth0ComponentProvider` to switch between built-in themes.
-
-```tsx
-<Auth0ComponentProvider
-  themeSettings={{
-    mode: "light", // 'light' | 'dark'
-    theme: "default", // 'default' | 'minimal' | 'rounded'
-  }}
->
-  <App />
-</Auth0ComponentProvider>
-```
-
-<table class="table">
-  <thead>
-    <tr>
-      <th>Preset</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>default</code></td>
-      <td>Standard Auth0 look with balanced shadows and borders</td>
-    </tr>
-    <tr>
-      <td><code>minimal</code></td>
-      <td>Reduced visual weight with fewer shadows and lighter borders</td>
-    </tr>
-    <tr>
-      <td><code>rounded</code></td>
-      <td>Increased border radii for a softer appearance</td>
-    </tr>
-  </tbody>
-</table>
-
----
-
-## CSS variables
-
-### Colors
-
-Set CSS custom properties in your stylesheet to override color defaults globally.
-
-<Tabs>
-  <Tab title="Without Tailwind">
+Override any of these on `:root` to customize globally.
 
 <Tabs>
   <Tab title="Light">
@@ -337,7 +154,103 @@ Set CSS custom properties in your stylesheet to override color defaults globally
 
   </Tab>
 
-  <Tab title="Tailwind">
+  <Tab title="Tailwind v4">
+
+### Get started
+
+Auth0 Universal Components work natively with Tailwind v4 (including shadcn). Instead of importing a pre-built stylesheet, your own Tailwind build generates the component CSS. Requires Tailwind v4. If you're on Tailwind v3, use the **CSS** tab.
+
+<Tabs>
+  <Tab title="React (SPA)">
+
+1. Add the imports to your CSS file:
+
+```css
+@import "tailwindcss";
+@import "@auth0/universal-components-react/tailwind";
+@import "@auth0/universal-components-core/styles/globals.css";
+```
+
+2. Map your theme variables. If you're using shadcn, this is already in your CSS. Otherwise, add the following `@theme` block:
+
+```css
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+}
+```
+
+3. Define your brand color:
+
+```css
+:root {
+  --primary: #4f46e5; /* your brand color */
+  --primary-foreground: #ffffff; /* text on buttons */
+}
+```
+
+Done. All buttons, links, and active states now use your brand.
+
+  </Tab>
+
+  <Tab title="Next.js">
+
+1. Add the imports to your CSS file:
+
+```css
+@import "tailwindcss";
+@import "@auth0/universal-components-react/tailwind";
+@import "@auth0/universal-components-core/styles/globals.css";
+```
+
+2. Map your theme variables. If you're using shadcn, this is already in your CSS. Otherwise, add the following `@theme` block:
+
+```css
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+}
+```
+
+3. Define your brand color:
+
+```css
+:root {
+  --primary: #4f46e5; /* your brand color */
+  --primary-foreground: #ffffff; /* text on buttons */
+}
+```
+
+Set up `Auth0ComponentProvider` with proxy mode in your root `layout.tsx`. See [Configure Auth0ComponentProvider](/docs/get-started/universal-components/auth0-component-provider) for the full Next.js layout example.
+
+Done. All buttons, links, and active states now use your brand.
+
+  </Tab>
+</Tabs>
+
+### Color variable reference
+
+Override any of these on `:root` to customize globally.
 
 <Tabs>
   <Tab title="Light">
@@ -418,9 +331,96 @@ Set CSS custom properties in your stylesheet to override color defaults globally
   </Tab>
 </Tabs>
 
-### Status colors
+---
 
-Status colors use the same names regardless of your CSS setup:
+## Customization overview
+
+Auth0 Universal Components support four customization methods. Use the one that fits your use case, or combine them — each layer overrides the previous.
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Method</th>
+      <th>Scope</th>
+      <th>When to use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Theme presets</strong></td>
+      <td>Global</td>
+      <td>Switch between built-in design variants (default, minimal, rounded)</td>
+    </tr>
+    <tr>
+      <td><strong>CSS variables</strong></td>
+      <td>Global</td>
+      <td>Simple brand customization in your stylesheet</td>
+    </tr>
+    <tr>
+      <td><strong><code>themeSettings.variables</code></strong></td>
+      <td>Global</td>
+      <td>Programmatic overrides — dynamic theming, per-tenant branding</td>
+    </tr>
+    <tr>
+      <td><strong><code>styling</code> prop</strong></td>
+      <td>Per-component</td>
+      <td>Targeted overrides for a specific component instance</td>
+    </tr>
+  </tbody>
+</table>
+
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+**Naming rule:** `themeSettings.variables` and the `styling` prop always use `--auth0-*` prefixed names for colors (e.g., `--auth0-primary`), regardless of your CSS setup. Only stylesheet overrides differ — `--auth0-*` with the CSS path, bare `--primary` with Tailwind v4.
+
+</Callout>
+
+---
+
+## Theme presets
+
+Pass `themeSettings` to `Auth0ComponentProvider` to switch between built-in themes.
+
+```tsx
+<Auth0ComponentProvider
+  themeSettings={{
+    mode: "light", // 'light' | 'dark'
+    theme: "default", // 'default' | 'minimal' | 'rounded'
+  }}
+>
+  <App />
+</Auth0ComponentProvider>
+```
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Preset</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>default</code></td>
+      <td>Standard Auth0 look with balanced shadows and borders</td>
+    </tr>
+    <tr>
+      <td><code>minimal</code></td>
+      <td>Reduced visual weight with fewer shadows and lighter borders</td>
+    </tr>
+    <tr>
+      <td><code>rounded</code></td>
+      <td>Increased border radii for a softer appearance</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## Shared CSS variables
+
+The following variables use the same names regardless of your CSS setup.
+
+### Status colors
 
 ```css
 :root {
@@ -439,8 +439,6 @@ Status colors use the same names regardless of your CSS setup:
 ```
 
 ### Border radius
-
-Border radius variables use the same names regardless of your CSS setup:
 
 ```css
 :root {
@@ -462,8 +460,6 @@ Border radius variables use the same names regardless of your CSS setup:
 
 ### Typography
 
-Typography variables use the same names regardless of your CSS setup:
-
 ```css
 :root {
   --font-size-page-header:      2.25rem;   /* 36px - main title */
@@ -479,7 +475,7 @@ Typography variables use the same names regardless of your CSS setup:
 
 ### Shadows
 
-Shadow variables control elevation and interactive state feedback. They use the same names regardless of your CSS setup and belong in the `light` or `dark` sections of `themeSettings.variables`.
+Shadow variables control elevation and interactive state feedback. They belong in the `light` or `dark` sections when using `themeSettings.variables`.
 
 <Callout icon="file-lines" color="#0EA5E9" iconType="regular">
 Shadow variables only take effect when using the `default` theme preset. The `minimal` and `rounded` presets disable shadows via internal gating.
@@ -665,28 +661,7 @@ Every component accepts a `styling` prop for targeted overrides without affectin
 
 ### Brand colors
 
-<Tabs>
-  <Tab title="Without Tailwind">
-
-```css
-:root {
-  --auth0-primary: #4f46e5;
-  --auth0-primary-foreground: #ffffff;
-}
-```
-
-  </Tab>
-  <Tab title="Tailwind">
-
-```css
-:root {
-  --primary: #4f46e5;
-  --primary-foreground: #ffffff;
-}
-```
-
-  </Tab>
-</Tabs>
+Set `--auth0-primary` (CSS path) or `--primary` (Tailwind v4 path) on `:root`. See the [color variable reference](#color-variable-reference) for the full list.
 
 ### Soft corners
 
