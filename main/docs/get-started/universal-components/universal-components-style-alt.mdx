@@ -1,6 +1,6 @@
 ---
 title: Customize Style and Themes with Auth0 Universal Components
-description: Customize the Auth0 Universal Components design system using Tailwind CSS, CSS variables, and built-in theme presets.
+description: Customize the Auth0 Universal Components design system using CSS variables, built-in theme presets, and programmatic overrides.
 sidebarTitle: Customize Style and Themes
 ---
 
@@ -18,18 +18,16 @@ This architecture ensures that your identity flows look and feel like native par
 ## Get started
 
 <Tabs>
+  <Tab title="React (SPA)">
+
+<Tabs>
   <Tab title="Without Tailwind">
 
-Import the scoped stylesheet in your application entry point.
+Import the scoped stylesheet in your application entry point (e.g., `main.tsx`):
 
 ```tsx
 import "@auth0/universal-components-react/styles";
 ```
-
-<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
-**Next.js:** Import in your root `layout.tsx` alongside the provider setup. See [Configure Auth0ComponentProvider](/docs/get-started/universal-components/auth0-component-provider) for the full layout example.
-
-</Callout>
 
 Add your brand color:
 
@@ -44,16 +42,11 @@ Done. All buttons, links, and active states now use your brand.
 
   </Tab>
 
-  <Tab title="Tailwind">
+  <Tab title="Tailwind v4">
 
-Auth0 Universal Components work natively with Tailwind v4 (including shadcn). Instead of importing a pre-built stylesheet, your own Tailwind build generates the component CSS.
+Auth0 Universal Components work natively with Tailwind v4 (including shadcn). Instead of importing a pre-built stylesheet, your own Tailwind build generates the component CSS. Requires Tailwind v4. If you're on Tailwind v3, use the **Without Tailwind** tab.
 
-<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
-**Requires Tailwind v4.** If you're on Tailwind v3, use the **Without Tailwind** tab — the scoped stylesheet works alongside any Tailwind version.
-
-</Callout>
-
-1. Add the imports to your CSS file.
+1. Add the imports to your CSS file:
 
 ```css
 @import "tailwindcss";
@@ -61,9 +54,7 @@ Auth0 Universal Components work natively with Tailwind v4 (including shadcn). In
 @import "@auth0/universal-components-core/styles/globals.css";
 ```
 
-2. Map your theme variables.
-
-If you're using shadcn, this is already in your CSS. Otherwise, add the following `@theme` block:
+2. Map your theme variables. If you're using shadcn, this is already in your CSS. Otherwise, add the following `@theme` block:
 
 ```css
 @theme inline {
@@ -82,7 +73,7 @@ If you're using shadcn, this is already in your CSS. Otherwise, add the followin
 }
 ```
 
-3. Define your brand color.
+3. Define your brand color:
 
 ```css
 :root {
@@ -93,10 +84,83 @@ If you're using shadcn, this is already in your CSS. Otherwise, add the followin
 
 Done. All buttons, links, and active states now use your brand.
 
-<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
-**Next.js:** Set up your provider with proxy mode as shown in [Configure Auth0ComponentProvider](/docs/get-started/universal-components/auth0-component-provider), then follow the CSS steps above.
+  </Tab>
+</Tabs>
 
-</Callout>
+  </Tab>
+
+  <Tab title="Next.js">
+
+<Tabs>
+  <Tab title="Without Tailwind">
+
+Import the scoped stylesheet in your root `layout.tsx`:
+
+```tsx
+import "@auth0/universal-components-react/styles";
+```
+
+Set up `Auth0ComponentProvider` with proxy mode in the same file. See [Configure Auth0ComponentProvider](/docs/get-started/universal-components/auth0-component-provider) for the full Next.js layout example.
+
+Add your brand color:
+
+```css
+:root {
+  --auth0-primary: #4f46e5; /* your brand color */
+  --auth0-primary-foreground: #ffffff; /* text on buttons */
+}
+```
+
+Done. All buttons, links, and active states now use your brand.
+
+  </Tab>
+
+  <Tab title="Tailwind v4">
+
+Auth0 Universal Components work natively with Tailwind v4 (including shadcn). Instead of importing a pre-built stylesheet, your own Tailwind build generates the component CSS. Requires Tailwind v4. If you're on Tailwind v3, use the **Without Tailwind** tab.
+
+1. Add the imports to your CSS file:
+
+```css
+@import "tailwindcss";
+@import "@auth0/universal-components-react/tailwind";
+@import "@auth0/universal-components-core/styles/globals.css";
+```
+
+2. Map your theme variables. If you're using shadcn, this is already in your CSS. Otherwise, add the following `@theme` block:
+
+```css
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+}
+```
+
+3. Define your brand color:
+
+```css
+:root {
+  --primary: #4f46e5; /* your brand color */
+  --primary-foreground: #ffffff; /* text on buttons */
+}
+```
+
+Set up `Auth0ComponentProvider` with proxy mode in your root `layout.tsx`. See [Configure Auth0ComponentProvider](/docs/get-started/universal-components/auth0-component-provider) for the full Next.js layout example.
+
+Done. All buttons, links, and active states now use your brand.
+
+  </Tab>
+</Tabs>
 
   </Tab>
 </Tabs>
@@ -188,53 +252,57 @@ Pass `themeSettings` to `Auth0ComponentProvider` to switch between built-in them
 
 ## CSS variables
 
-### Override with your stylesheet
+### Colors
 
-Set CSS custom properties in your stylesheet to override defaults globally.
+Set CSS custom properties in your stylesheet to override color defaults globally.
 
 <Tabs>
   <Tab title="Without Tailwind">
 
 <Tabs>
-  <Tab title="Colors (Light)">
+  <Tab title="Light">
 
 ```css
 :root {
   /* Brand */
-  --auth0-primary: oklch(37% 0 0);              /* buttons, links, active states */
-  --auth0-primary-foreground: oklch(100% 0 0);  /* text on primary surfaces */
+  --auth0-primary: oklch(37% 0 0);                    /* buttons, links, active states */
+  --auth0-primary-foreground: oklch(100% 0 0);        /* text on primary surfaces */
 
   /* Surfaces */
-  --auth0-background: oklch(100% 0 0);          /* page background */
-  --auth0-foreground: oklch(9% 0 0);            /* default text */
-  --auth0-card: oklch(100% 0 0);                /* card background */
-  --auth0-card-foreground: oklch(0% 0 0);       /* text inside cards */
-  --auth0-popover: oklch(100% 0 0);             /* dropdown/dialog background */
-  --auth0-input: oklch(100% 0 0);               /* input field background */
+  --auth0-background: oklch(100% 0 0);                /* page background */
+  --auth0-foreground: oklch(9% 0 0);                  /* default text */
+  --auth0-card: oklch(100% 0 0);                      /* card background */
+  --auth0-card-foreground: oklch(0% 0 0);             /* text inside cards */
+  --auth0-popover: oklch(100% 0 0);                   /* dropdown/dialog background */
+  --auth0-popover-foreground: oklch(9% 0 0);          /* text inside dropdowns */
+  --auth0-input: oklch(100% 0 0);                     /* input field background */
 
   /* Secondary & muted */
   --auth0-secondary: oklch(96% 0 0);
-  --auth0-muted: oklch(96% 0 0);                /* disabled backgrounds */
-  --auth0-muted-foreground: oklch(45% 0 0);     /* placeholder text */
+  --auth0-secondary-foreground: oklch(9% 0 0);
+  --auth0-muted: oklch(96% 0 0);                      /* disabled backgrounds */
+  --auth0-muted-foreground: oklch(45% 0 0);           /* placeholder text */
 
   /* Accent & destructive */
-  --auth0-accent: oklch(97% 0 0);               /* hover highlights */
-  --auth0-destructive: oklch(93% 0.03 17);      /* error states */
+  --auth0-accent: oklch(97% 0 0);                     /* hover highlights */
+  --auth0-accent-foreground: oklch(9% 0 0);
+  --auth0-destructive: oklch(93% 0.03 17);            /* error states */
+  --auth0-destructive-foreground: oklch(100% 0 0);
 
   /* Borders */
   --auth0-border: oklch(89% 0 0);
-  --auth0-ring: oklch(89% 0 0);                 /* focus ring */
+  --auth0-ring: oklch(89% 0 0);                       /* focus ring */
 }
 ```
 
   </Tab>
 
-  <Tab title="Colors (Dark)">
+  <Tab title="Dark">
 
 ```css
 :root {
   /* Brand */
-  --auth0-primary: oklch(70% 0.15 250);         /* brighter for dark backgrounds */
+  --auth0-primary: oklch(70% 0.15 250);               /* brighter for dark backgrounds */
   --auth0-primary-foreground: oklch(10% 0 0);
 
   /* Surfaces */
@@ -243,16 +311,20 @@ Set CSS custom properties in your stylesheet to override defaults globally.
   --auth0-card: oklch(15% 0 0);
   --auth0-card-foreground: oklch(95% 0 0);
   --auth0-popover: oklch(15% 0 0);
+  --auth0-popover-foreground: oklch(95% 0 0);
   --auth0-input: oklch(18% 0 0);
 
   /* Secondary & muted */
   --auth0-secondary: oklch(20% 0 0);
+  --auth0-secondary-foreground: oklch(95% 0 0);
   --auth0-muted: oklch(20% 0 0);
   --auth0-muted-foreground: oklch(60% 0 0);
 
   /* Accent & destructive */
   --auth0-accent: oklch(25% 0 0);
+  --auth0-accent-foreground: oklch(95% 0 0);
   --auth0-destructive: oklch(30% 0.15 17);
+  --auth0-destructive-foreground: oklch(95% 0 0);
 
   /* Borders */
   --auth0-border: oklch(25% 0 0);
@@ -268,45 +340,49 @@ Set CSS custom properties in your stylesheet to override defaults globally.
   <Tab title="Tailwind">
 
 <Tabs>
-  <Tab title="Colors (Light)">
+  <Tab title="Light">
 
 ```css
 :root {
   /* Brand */
-  --primary: oklch(37% 0 0);              /* buttons, links, active states */
-  --primary-foreground: oklch(100% 0 0);  /* text on primary surfaces */
+  --primary: oklch(37% 0 0);                    /* buttons, links, active states */
+  --primary-foreground: oklch(100% 0 0);        /* text on primary surfaces */
 
   /* Surfaces */
-  --background: oklch(100% 0 0);          /* page background */
-  --foreground: oklch(9% 0 0);            /* default text */
-  --card: oklch(100% 0 0);                /* card background */
-  --card-foreground: oklch(0% 0 0);       /* text inside cards */
-  --popover: oklch(100% 0 0);             /* dropdown/dialog background */
-  --input: oklch(100% 0 0);               /* input field background */
+  --background: oklch(100% 0 0);                /* page background */
+  --foreground: oklch(9% 0 0);                  /* default text */
+  --card: oklch(100% 0 0);                      /* card background */
+  --card-foreground: oklch(0% 0 0);             /* text inside cards */
+  --popover: oklch(100% 0 0);                   /* dropdown/dialog background */
+  --popover-foreground: oklch(9% 0 0);          /* text inside dropdowns */
+  --input: oklch(100% 0 0);                     /* input field background */
 
   /* Secondary & muted */
   --secondary: oklch(96% 0 0);
-  --muted: oklch(96% 0 0);                /* disabled backgrounds */
-  --muted-foreground: oklch(45% 0 0);     /* placeholder text */
+  --secondary-foreground: oklch(9% 0 0);
+  --muted: oklch(96% 0 0);                      /* disabled backgrounds */
+  --muted-foreground: oklch(45% 0 0);           /* placeholder text */
 
   /* Accent & destructive */
-  --accent: oklch(97% 0 0);               /* hover highlights */
-  --destructive: oklch(93% 0.03 17);      /* error states */
+  --accent: oklch(97% 0 0);                     /* hover highlights */
+  --accent-foreground: oklch(9% 0 0);
+  --destructive: oklch(93% 0.03 17);            /* error states */
+  --destructive-foreground: oklch(100% 0 0);
 
   /* Borders */
   --border: oklch(89% 0 0);
-  --ring: oklch(89% 0 0);                 /* focus ring */
+  --ring: oklch(89% 0 0);                       /* focus ring */
 }
 ```
 
   </Tab>
 
-  <Tab title="Colors (Dark)">
+  <Tab title="Dark">
 
 ```css
 .dark {
   /* Brand */
-  --primary: oklch(70% 0.15 250);         /* brighter for dark backgrounds */
+  --primary: oklch(70% 0.15 250);               /* brighter for dark backgrounds */
   --primary-foreground: oklch(10% 0 0);
 
   /* Surfaces */
@@ -315,16 +391,20 @@ Set CSS custom properties in your stylesheet to override defaults globally.
   --card: oklch(15% 0 0);
   --card-foreground: oklch(95% 0 0);
   --popover: oklch(15% 0 0);
+  --popover-foreground: oklch(95% 0 0);
   --input: oklch(18% 0 0);
 
   /* Secondary & muted */
   --secondary: oklch(20% 0 0);
+  --secondary-foreground: oklch(95% 0 0);
   --muted: oklch(20% 0 0);
   --muted-foreground: oklch(60% 0 0);
 
   /* Accent & destructive */
   --accent: oklch(25% 0 0);
+  --accent-foreground: oklch(95% 0 0);
   --destructive: oklch(30% 0.15 17);
+  --destructive-foreground: oklch(95% 0 0);
 
   /* Borders */
   --border: oklch(25% 0 0);
@@ -338,48 +418,135 @@ Set CSS custom properties in your stylesheet to override defaults globally.
   </Tab>
 </Tabs>
 
-**Border radius and typography** use the same names regardless of your setup:
+### Status colors
 
-<Tabs>
-  <Tab title="Border Radius">
+Status colors use the same names regardless of your CSS setup:
 
 ```css
 :root {
-  --radius-sm:  4px;    /* tags, chips */
-  --radius-md:  6px;    /* small elements */
-  --radius-lg:  10px;   /* buttons, inputs */
-  --radius-xl:  12px;   /* cards */
-  --radius-2xl: 16px;   /* modals, large panels */
-  --radius-xs:  2px;
-  --radius-3xl: 20px;
-  --radius-4xl: 24px;
-  --radius-5xl: 32px;
+  --color-page: oklch(100% 0 0);                /* page-level background */
+  --color-info: oklch(62% 0.17 255);            /* info banners */
+  --color-info-foreground: oklch(100% 0 0);
+  --color-success: oklch(60% 0.15 145);         /* success states */
+  --color-success-foreground: oklch(100% 0 0);
+  --color-warning: oklch(75% 0.15 75);          /* warning banners */
+  --color-warning-foreground: oklch(25% 0 0);
+  --color-destructive-border: oklch(70% 0.15 17);
+  --color-popover-border: oklch(89% 0 0);
+  --color-input-foreground: oklch(9% 0 0);
+  --color-input-muted: oklch(55% 0 0);
 }
 ```
 
-  </Tab>
+### Border radius
 
-  <Tab title="Typography">
+Border radius variables use the same names regardless of your CSS setup:
+
+```css
+:root {
+  --radius-xs:  2px;
+  --radius-sm:  4px;     /* tags, chips */
+  --radius-md:  6px;     /* small elements */
+  --radius-lg:  10px;    /* buttons, inputs */
+  --radius-xl:  12px;    /* cards */
+  --radius-2xl: 16px;    /* modals, large panels */
+  --radius-3xl: 20px;
+  --radius-4xl: 24px;
+  --radius-5xl: 32px;
+  --radius-6xl: 40px;
+  --radius-7xl: 48px;
+  --radius-8xl: 56px;
+  --radius-9xl: 64px;
+}
+```
+
+### Typography
+
+Typography variables use the same names regardless of your CSS setup:
 
 ```css
 :root {
   --font-size-page-header:      2.25rem;   /* 36px - main title */
+  --font-size-page-description: 0.875rem;  /* 14px - subtitles */
   --font-size-heading:          1.5rem;    /* 24px - section headings */
   --font-size-title:            1.25rem;   /* 20px - card titles */
   --font-size-subtitle:         1.125rem;  /* 18px - secondary headings */
   --font-size-body:             1rem;      /* 16px - body text */
   --font-size-paragraph:        0.875rem;  /* 14px - descriptions */
   --font-size-label:            0.875rem;  /* 14px - form labels */
-  --font-size-page-description: 0.875rem;  /* 14px - subtitles */
 }
 ```
 
-  </Tab>
-</Tabs>
+### Shadows
+
+Shadow variables control elevation and interactive state feedback. They use the same names regardless of your CSS setup and belong in the `light` or `dark` sections of `themeSettings.variables`.
+
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+Shadow variables only take effect when using the `default` theme preset. The `minimal` and `rounded` presets disable shadows via internal gating.
+
+</Callout>
+
+```css
+:root {
+  /* Button shadows */
+  --shadow-button-resting: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-button-hover: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-button-focus: 0 0 0 3px rgba(79, 70, 229, 0.3);
+
+  /* Input shadows */
+  --shadow-input-resting: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-input-hover: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-input-focus: 0 0 0 3px rgba(79, 70, 229, 0.3);
+
+  /* Bevel shadows (elevation) */
+  --shadow-bevel-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-bevel-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-bevel-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-bevel-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+```
+
+<Accordion title="All shadow variables">
+
+**Bevel (elevation)**
+
+- `--shadow-bevel-xs`, `--shadow-bevel-sm`, `--shadow-bevel-md`
+- `--shadow-bevel-lg`, `--shadow-bevel-xl`, `--shadow-bevel-2xl`
+
+**Button**
+
+- `--shadow-button-resting`, `--shadow-button-hover`, `--shadow-button-focus`
+
+**Button destructive**
+
+- `--shadow-button-destructive-resting`, `--shadow-button-destructive-hover`, `--shadow-button-destructive-focus`
+
+**Button outlined**
+
+- `--shadow-button-outlined-resting`, `--shadow-button-outlined-hover`, `--shadow-button-outlined-focus`
+
+**Input**
+
+- `--shadow-input-resting`, `--shadow-input-hover`, `--shadow-input-focus`
+
+**Input destructive**
+
+- `--shadow-input-destructive-resting`, `--shadow-input-destructive-hover`, `--shadow-input-destructive-focus`
+
+**Checkbox**
+
+- `--shadow-checkbox-resting`, `--shadow-checkbox-hover`
+
+**Switch**
+
+- `--shadow-switch-resting`, `--shadow-switch-hover`, `--shadow-switch-focus`
+- `--shadow-switch-thumb`, `--shadow-switch-thumb-dark`
+
+</Accordion>
 
 ---
 
-### Override with `themeSettings.variables`
+## Provider-level overrides (`themeSettings.variables`)
 
 Set CSS variables programmatically on the provider. This is useful for dynamic theming — for example, changing brand colors per tenant or user preference. These overrides take precedence over your stylesheet.
 
@@ -409,11 +576,31 @@ Set CSS variables programmatically on the provider. This is useful for dynamic t
 </Auth0ComponentProvider>
 ```
 
-Use `common` for radius and typography. Use `light` and `dark` for color and shadow overrides. Color variables always use `--auth0-*` prefixed names.
+- Use `common` for border radius and typography overrides.
+- Use `light` and `dark` for colors, status colors, and shadows.
+- Color variables always use `--auth0-*` prefixed names.
+
+<Accordion title="All available variables for themeSettings.variables">
+
+**`common` (shared across light and dark modes)**
+
+Typography: `--font-size-page-header`, `--font-size-page-description`, `--font-size-heading`, `--font-size-title`, `--font-size-subtitle`, `--font-size-body`, `--font-size-paragraph`, `--font-size-label`
+
+Border radius: `--radius-xs`, `--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-xl`, `--radius-2xl`, `--radius-3xl`, `--radius-4xl`, `--radius-5xl`, `--radius-6xl`, `--radius-7xl`, `--radius-8xl`, `--radius-9xl`
+
+**`light` and `dark` (identical key sets)**
+
+Bridge colors: `--auth0-background`, `--auth0-foreground`, `--auth0-card`, `--auth0-card-foreground`, `--auth0-primary`, `--auth0-primary-foreground`, `--auth0-secondary`, `--auth0-secondary-foreground`, `--auth0-accent`, `--auth0-accent-foreground`, `--auth0-muted`, `--auth0-muted-foreground`, `--auth0-destructive`, `--auth0-destructive-foreground`, `--auth0-popover`, `--auth0-popover-foreground`, `--auth0-input`, `--auth0-border`, `--auth0-ring`
+
+Status colors: `--color-page`, `--color-info`, `--color-info-foreground`, `--color-success`, `--color-success-foreground`, `--color-warning`, `--color-warning-foreground`, `--color-destructive-border`, `--color-popover-border`, `--color-input-foreground`, `--color-input-muted`
+
+Shadows: See the [Shadows](#shadows) section for the full list.
+
+</Accordion>
 
 ---
 
-### Override per component with the `styling` prop
+## Component-level overrides (`styling` prop)
 
 Every component accepts a `styling` prop for targeted overrides without affecting other components.
 
@@ -522,11 +709,26 @@ Every component accepts a `styling` prop for targeted overrides without affectin
 }
 ```
 
+### Flat buttons (remove elevation)
+
+```css
+:root {
+  --shadow-button-resting: none;
+  --shadow-button-hover: none;
+  --shadow-button-focus: 0 0 0 3px rgba(79, 70, 229, 0.3);
+}
+```
+
 ---
 
 ## Dark mode
 
-The components automatically respond to the `mode` setting in `themeSettings`. To sync with your app's dark mode:
+The components automatically respond to the `mode` setting in `themeSettings`.
+
+<Tabs>
+  <Tab title="React (SPA)">
+
+Sync with your app's dark mode state:
 
 ```tsx
 function App() {
@@ -554,7 +756,48 @@ const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 >
 ```
 
-<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
-**Next.js users:** Include your proxy mode props (`mode="proxy"`, `domain`, `proxyConfig`) on `Auth0ComponentProvider` as shown in [Configure Auth0ComponentProvider](/docs/get-started/universal-components/auth0-component-provider).
+  </Tab>
 
-</Callout>
+  <Tab title="Next.js">
+
+Include your proxy mode props alongside `themeSettings` on `Auth0ComponentProvider`:
+
+```tsx
+<Auth0ComponentProvider
+  mode="proxy"
+  domain="your-tenant.auth0.com"
+  proxyConfig={{ loginPath: "/auth/login" }}
+  themeSettings={{
+    mode: isDark ? "dark" : "light",
+  }}
+>
+  <YourApp />
+</Auth0ComponentProvider>
+```
+
+See [Configure Auth0ComponentProvider](/docs/get-started/universal-components/auth0-component-provider) for the full Next.js proxy mode setup.
+
+  </Tab>
+</Tabs>
+
+Provide separate color palettes for each mode using `themeSettings.variables`:
+
+```tsx
+<Auth0ComponentProvider
+  themeSettings={{
+    mode: isDark ? "dark" : "light",
+    variables: {
+      light: {
+        "--auth0-primary": "#4f46e5",
+        "--auth0-background": "#ffffff",
+      },
+      dark: {
+        "--auth0-primary": "#818cf8",
+        "--auth0-background": "#121212",
+      },
+    },
+  }}
+>
+```
+
+The provider automatically applies the correct set of variables based on the active mode.
