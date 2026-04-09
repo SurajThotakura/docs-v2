@@ -15,18 +15,23 @@ Auth0 Universal Components are built on a flexible design system that utilizes [
 
 This architecture ensures that your identity flows look and feel like native parts of your application.
 
+<Tabs>
+  <Tab title="Without Tailwind">
+
 ## Get started
 
-<Tabs>
-  <Tab title="React">
-
-1. Import the scoped stylesheet.
+Import the scoped stylesheet in your application entry point.
 
 ```tsx
 import "@auth0/universal-components-react/styles";
 ```
 
-2. Add your brand color.
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+**Next.js:** Import in your root `layout.tsx` alongside the provider setup. See [Configure Auth0ComponentProvider](/docs/get-started/universal-components/auth0-component-provider) for the full layout example.
+
+</Callout>
+
+Add your brand color:
 
 ```css
 :root {
@@ -36,110 +41,6 @@ import "@auth0/universal-components-react/styles";
 ```
 
 Done. All buttons, links, and active states now use your brand.
-
-<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
-**Using Tailwind v4?** Follow the [Tailwind v4 / shadcn](#) tab instead.
-
-</Callout>
-
-  </Tab>
-
-  <Tab title="Next.js">
-
-1. Import the scoped stylesheet in your root layout.
-
-```tsx layout.tsx
-import { Auth0ComponentProvider } from "@auth0/universal-components-react/rwa";
-import "@auth0/universal-components-react/styles";
-
-export default function RootLayout({ children }) {
-  return (
-    <html lang="en">
-      <body>
-        <Auth0ComponentProvider
-          mode="proxy"
-          domain={process.env.NEXT_PUBLIC_AUTH0_DOMAIN}
-          proxyConfig={{ baseUrl: "/api/auth" }}
-        >
-          {children}
-        </Auth0ComponentProvider>
-      </body>
-    </html>
-  );
-}
-```
-
-2. Add your brand color.
-
-```css
-:root {
-  --auth0-primary: #4f46e5; /* your brand color */
-  --auth0-primary-foreground: #ffffff; /* text on buttons */
-}
-```
-
-Done. All buttons, links, and active states now use your brand.
-
-<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
-**Using Tailwind v4 or shadcn?** Follow the [Tailwind v4 / shadcn](#) tab instead.
-
-</Callout>
-
-  </Tab>
-
-  <Tab title="Tailwind v4 / shadcn">
-
-Auth0 Universal Components work natively with Tailwind v4 and shadcn. Instead of importing a pre-built stylesheet, your own Tailwind build generates the component CSS.
-
-1. Add the source directive to your CSS file.
-
-```css
-@import "tailwindcss";
-@import "@auth0/universal-components-react/tailwind";
-@import "@auth0/universal-components-core/styles/globals.css";
-```
-
-The `tailwind` import contains `@source "./**/*.js"`, which tells your Tailwind build to scan Auth0's component files for class names like `bg-primary` and `text-muted-foreground`.
-
-2. Map your theme variables.
-
-If you're using shadcn, this is already in your CSS. Otherwise, add the `@theme` block that bridges your bare variable names to Tailwind's internal `--color-*` tokens:
-
-```css
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-border: var(--border);
-  --color-ring: var(--ring);
-}
-```
-
-3. Define your brand color.
-
-```css
-:root {
-  --primary: #4f46e5; /* your brand color */
-  --primary-foreground: #ffffff; /* text on buttons */
-}
-```
-
-Done. Your Tailwind build generates the utility CSS, and your `:root` values flow through the `@theme` mapping into the components.
-
-<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
-**Why bare `--primary` works here:** Your `@theme` block maps `--color-primary: var(--primary)`. Tailwind reads `--color-primary` and generates `.bg-primary { background-color: var(--color-primary) }`. The chain is: `--primary` → `--color-primary` → utility class. Auth0's pre-built CSS is not involved.
-
-</Callout>
-
-  </Tab>
-</Tabs>
 
 ---
 
@@ -167,21 +68,15 @@ Pass `themeSettings` to `Auth0ComponentProvider` to switch between built-in them
   </thead>
   <tbody>
     <tr>
-      <td>
-        <code>default</code>
-      </td>
+      <td><code>default</code></td>
       <td>Standard Auth0 look with balanced shadows and borders</td>
     </tr>
     <tr>
-      <td>
-        <code>minimal</code>
-      </td>
+      <td><code>minimal</code></td>
       <td>Reduced visual weight with fewer shadows and lighter borders</td>
     </tr>
     <tr>
-      <td>
-        <code>rounded</code>
-      </td>
+      <td><code>rounded</code></td>
       <td>Increased border radii for a softer appearance</td>
     </tr>
   </tbody>
@@ -193,141 +88,93 @@ Pass `themeSettings` to `Auth0ComponentProvider` to switch between built-in them
 
 All visual properties are driven by CSS custom properties. Override them in your stylesheet or via the `themeSettings.variables` prop.
 
-<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
-**Color variable names depend on your setup.**
-
-- **React / Next.js** (imported `styles.css`): Use `--auth0-*` prefixed names, e.g., `--auth0-primary`.
-- **Tailwind v4 / shadcn**: Use bare names in your CSS, e.g., `--primary`.
-
-Border radius, typography, and shadow variables use the same names everywhere.
-
-</Callout>
-
 <Tabs>
   <Tab title="Colors (Light)">
-The table below shows both naming conventions. Use the column that matches your setup.
 
 ```css
 :root {
-  /* Brand - the most impactful variables */
-  /* Scoped: --auth0-primary          Tailwind: --primary */
-  /* Scoped: --auth0-primary-foreground  Tailwind: --primary-foreground */
+  /* Brand */
+  --auth0-primary: oklch(37% 0 0);              /* buttons, links, active states */
+  --auth0-primary-foreground: oklch(100% 0 0);  /* text on primary surfaces */
 
   /* Surfaces */
-  /* Scoped: --auth0-background       Tailwind: --background */
-  /* Scoped: --auth0-foreground       Tailwind: --foreground */
-  /* Scoped: --auth0-card             Tailwind: --card */
-  /* Scoped: --auth0-card-foreground  Tailwind: --card-foreground */
-  /* Scoped: --auth0-popover          Tailwind: --popover */
-  /* Scoped: --auth0-popover-foreground  Tailwind: --popover-foreground */
-  /* Scoped: --auth0-input            Tailwind: --input */
+  --auth0-background: oklch(100% 0 0);          /* page background */
+  --auth0-foreground: oklch(9% 0 0);            /* default text */
+  --auth0-card: oklch(100% 0 0);                /* card background */
+  --auth0-card-foreground: oklch(0% 0 0);       /* text inside cards */
+  --auth0-popover: oklch(100% 0 0);             /* dropdown/dialog background */
+  --auth0-input: oklch(100% 0 0);               /* input field background */
 
   /* Secondary & muted */
-  /* Scoped: --auth0-secondary          Tailwind: --secondary */
-  /* Scoped: --auth0-secondary-foreground  Tailwind: --secondary-foreground */
-  /* Scoped: --auth0-muted              Tailwind: --muted */
-  /* Scoped: --auth0-muted-foreground   Tailwind: --muted-foreground */
+  --auth0-secondary: oklch(96% 0 0);
+  --auth0-muted: oklch(96% 0 0);                /* disabled backgrounds */
+  --auth0-muted-foreground: oklch(45% 0 0);     /* placeholder text */
 
   /* Accent & destructive */
-  /* Scoped: --auth0-accent             Tailwind: --accent */
-  /* Scoped: --auth0-accent-foreground  Tailwind: --accent-foreground */
-  /* Scoped: --auth0-destructive        Tailwind: --destructive */
-  /* Scoped: --auth0-destructive-foreground  Tailwind: --destructive-foreground */
+  --auth0-accent: oklch(97% 0 0);               /* hover highlights */
+  --auth0-destructive: oklch(93% 0.03 17);      /* error states */
 
   /* Borders */
-  /* Scoped: --auth0-border             Tailwind: --border */
-  /* Scoped: --auth0-ring               Tailwind: --ring */
-
-  /* Status colors (same name in both) */
-  /* --color-page, --color-info, --color-success, --color-warning */
+  --auth0-border: oklch(89% 0 0);
+  --auth0-ring: oklch(89% 0 0);                 /* focus ring */
 }
 ```
 
-**Light mode defaults (oklch):**
-
-<table class="table">
-  <thead>
-    <tr>
-      <th>Scoped name</th>
-      <th>Tailwind name</th>
-      <th>Default value</th>
-      <th>Used for</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td><code>--auth0-primary</code></td><td><code>--primary</code></td><td><code>oklch(37% 0 0)</code></td><td>Buttons, links, active states</td></tr>
-    <tr><td><code>--auth0-primary-foreground</code></td><td><code>--primary-foreground</code></td><td><code>oklch(100% 0 0)</code></td><td>Text on primary surfaces</td></tr>
-    <tr><td><code>--auth0-background</code></td><td><code>--background</code></td><td><code>oklch(100% 0 0)</code></td><td>Page background</td></tr>
-    <tr><td><code>--auth0-foreground</code></td><td><code>--foreground</code></td><td><code>oklch(9% 0 0)</code></td><td>Default text</td></tr>
-    <tr><td><code>--auth0-card</code></td><td><code>--card</code></td><td><code>oklch(100% 0 0)</code></td><td>Card background</td></tr>
-    <tr><td><code>--auth0-card-foreground</code></td><td><code>--card-foreground</code></td><td><code>oklch(0% 0 0)</code></td><td>Text inside cards</td></tr>
-    <tr><td><code>--auth0-popover</code></td><td><code>--popover</code></td><td><code>oklch(100% 0 0)</code></td><td>Dropdown/dialog background</td></tr>
-    <tr><td><code>--auth0-input</code></td><td><code>--input</code></td><td><code>oklch(100% 0 0)</code></td><td>Input field background</td></tr>
-    <tr><td><code>--auth0-secondary</code></td><td><code>--secondary</code></td><td><code>oklch(96% 0 0)</code></td><td>Secondary surfaces</td></tr>
-    <tr><td><code>--auth0-muted</code></td><td><code>--muted</code></td><td><code>oklch(96% 0 0)</code></td><td>Disabled backgrounds</td></tr>
-    <tr><td><code>--auth0-muted-foreground</code></td><td><code>--muted-foreground</code></td><td><code>oklch(45% 0 0)</code></td><td>Placeholder text</td></tr>
-    <tr><td><code>--auth0-accent</code></td><td><code>--accent</code></td><td><code>oklch(97% 0 0)</code></td><td>Hover highlights</td></tr>
-    <tr><td><code>--auth0-destructive</code></td><td><code>--destructive</code></td><td><code>oklch(93% 0.03 17)</code></td><td>Error states</td></tr>
-    <tr><td><code>--auth0-border</code></td><td><code>--border</code></td><td><code>oklch(89% 0 0)</code></td><td>Border color</td></tr>
-    <tr><td><code>--auth0-ring</code></td><td><code>--ring</code></td><td><code>oklch(89% 0 0)</code></td><td>Focus ring</td></tr>
-  </tbody>
-</table>
   </Tab>
 
   <Tab title="Colors (Dark)">
-Override these values when using `mode: "dark"` or in a `.dark` class scope.
 
-**Dark mode defaults (oklch):**
+```css
+:root {
+  /* Brand */
+  --auth0-primary: oklch(70% 0.15 250);         /* brighter for dark backgrounds */
+  --auth0-primary-foreground: oklch(10% 0 0);
 
-<table class="table">
-  <thead>
-    <tr>
-      <th>Scoped name</th>
-      <th>Tailwind name</th>
-      <th>Default value</th>
-      <th>Used for</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td><code>--auth0-primary</code></td><td><code>--primary</code></td><td><code>oklch(70% 0.15 250)</code></td><td>Brighter for dark backgrounds</td></tr>
-    <tr><td><code>--auth0-primary-foreground</code></td><td><code>--primary-foreground</code></td><td><code>oklch(10% 0 0)</code></td><td>Text on primary surfaces</td></tr>
-    <tr><td><code>--auth0-background</code></td><td><code>--background</code></td><td><code>oklch(12% 0 0)</code></td><td>Page background</td></tr>
-    <tr><td><code>--auth0-foreground</code></td><td><code>--foreground</code></td><td><code>oklch(95% 0 0)</code></td><td>Default text</td></tr>
-    <tr><td><code>--auth0-card</code></td><td><code>--card</code></td><td><code>oklch(15% 0 0)</code></td><td>Card background</td></tr>
-    <tr><td><code>--auth0-card-foreground</code></td><td><code>--card-foreground</code></td><td><code>oklch(95% 0 0)</code></td><td>Text inside cards</td></tr>
-    <tr><td><code>--auth0-popover</code></td><td><code>--popover</code></td><td><code>oklch(15% 0 0)</code></td><td>Dropdown/dialog background</td></tr>
-    <tr><td><code>--auth0-input</code></td><td><code>--input</code></td><td><code>oklch(18% 0 0)</code></td><td>Input field background</td></tr>
-    <tr><td><code>--auth0-secondary</code></td><td><code>--secondary</code></td><td><code>oklch(20% 0 0)</code></td><td>Secondary surfaces</td></tr>
-    <tr><td><code>--auth0-muted</code></td><td><code>--muted</code></td><td><code>oklch(20% 0 0)</code></td><td>Disabled backgrounds</td></tr>
-    <tr><td><code>--auth0-muted-foreground</code></td><td><code>--muted-foreground</code></td><td><code>oklch(60% 0 0)</code></td><td>Placeholder text</td></tr>
-    <tr><td><code>--auth0-accent</code></td><td><code>--accent</code></td><td><code>oklch(25% 0 0)</code></td><td>Hover highlights</td></tr>
-    <tr><td><code>--auth0-destructive</code></td><td><code>--destructive</code></td><td><code>oklch(30% 0.15 17)</code></td><td>Error states</td></tr>
-    <tr><td><code>--auth0-border</code></td><td><code>--border</code></td><td><code>oklch(25% 0 0)</code></td><td>Border color</td></tr>
-    <tr><td><code>--auth0-ring</code></td><td><code>--ring</code></td><td><code>oklch(35% 0 0)</code></td><td>Focus ring</td></tr>
-  </tbody>
-</table>
+  /* Surfaces */
+  --auth0-background: oklch(12% 0 0);
+  --auth0-foreground: oklch(95% 0 0);
+  --auth0-card: oklch(15% 0 0);
+  --auth0-card-foreground: oklch(95% 0 0);
+  --auth0-popover: oklch(15% 0 0);
+  --auth0-input: oklch(18% 0 0);
+
+  /* Secondary & muted */
+  --auth0-secondary: oklch(20% 0 0);
+  --auth0-muted: oklch(20% 0 0);
+  --auth0-muted-foreground: oklch(60% 0 0);
+
+  /* Accent & destructive */
+  --auth0-accent: oklch(25% 0 0);
+  --auth0-destructive: oklch(30% 0.15 17);
+
+  /* Borders */
+  --auth0-border: oklch(25% 0 0);
+  --auth0-ring: oklch(35% 0 0);
+}
+```
+
   </Tab>
 
   <Tab title="Border Radius">
+
 ```css
 :root {
-  /* Common - adjust these for overall feel */
   --radius-sm:  4px;    /* tags, chips */
   --radius-md:  6px;    /* small elements */
   --radius-lg:  10px;   /* buttons, inputs */
   --radius-xl:  12px;   /* cards */
   --radius-2xl: 16px;   /* modals, large panels */
-
-  /* Fine-grained (rarely needed) */
   --radius-xs:  2px;
   --radius-3xl: 20px;
   --radius-4xl: 24px;
   --radius-5xl: 32px;
 }
 ```
+
   </Tab>
 
   <Tab title="Typography">
+
 ```css
 :root {
   --font-size-page-header:      2.25rem;   /* 36px - main title */
@@ -340,6 +187,348 @@ Override these values when using `mode: "dark"` or in a `.dark` class scope.
   --font-size-page-description: 0.875rem;  /* 14px - subtitles */
 }
 ```
+
+  </Tab>
+</Tabs>
+
+---
+
+## Style components
+
+Every component accepts a `styling` prop for targeted overrides without affecting global styles.
+
+```tsx
+<SsoProviderTable
+  styling={{
+    variables: {
+      common: {
+        "--radius-lg": "16px",
+      },
+      light: {
+        "--auth0-primary": "#059669",
+        "--auth0-card": "#f8fafc",
+      },
+      dark: {
+        "--auth0-primary": "#34d399",
+        "--auth0-card": "#1e293b",
+      },
+    },
+    classes: {
+      "SsoProviderTable-header": "shadow-lg",
+      "SsoProviderTable-table": "rounded-xl",
+    },
+  }}
+/>
+```
+
+**When to use:**
+
+- `variables` — CSS custom property overrides scoped to the component. Use `common` for radius and typography. Use `light`/`dark` for color overrides with `--auth0-*` prefixed names.
+- `classes` — Tailwind or custom classes applied to specific component parts.
+
+<Accordion title="Available class targets by component">
+  Each component exposes class targets for its major sections:
+
+**SsoProviderCreate**
+
+- `SsoProviderCreate-header`, `SsoProviderCreate-wizard`
+- `ProviderSelect-root`, `ProviderDetails-root`, `ProviderConfigure-root`
+
+**SsoProviderTable**
+
+- `SsoProviderTable-header`, `SsoProviderTable-table`, `SsoProviderTable-row`
+
+**SsoProviderEdit**
+
+- `SsoProviderEdit-header`, `SsoProviderEdit-tabs`
+- `SsoProviderEdit-ssoTab`, `SsoProviderEdit-provisioningTab`, `SsoProviderEdit-domainsTab`
+
+**DomainTable**
+
+- `DomainTable-header`, `DomainTable-table`
+- `DomainTable-createModal`, `DomainTable-configureModal`, `DomainTable-deleteModal`
+
+**OrganizationDetailsEdit**
+
+- `OrganizationDetailsEdit-header`, `OrganizationDetailsEdit-form`, `OrganizationDetailsEdit-actions`
+
+</Accordion>
+
+---
+
+## Common customizations
+
+### Brand colors
+
+```css
+:root {
+  --auth0-primary: #4f46e5;
+  --auth0-primary-foreground: #ffffff;
+}
+```
+
+### Soft corners
+
+```css
+:root {
+  --radius-lg: 16px; /* buttons, inputs */
+  --radius-xl: 20px; /* cards */
+  --radius-2xl: 24px; /* modals */
+}
+```
+
+### Compact typography
+
+```css
+:root {
+  --font-size-page-header: 1.75rem;
+  --font-size-heading: 1.25rem;
+  --font-size-title: 1rem;
+  --font-size-body: 0.875rem;
+}
+```
+
+---
+
+## Dark mode
+
+The components automatically respond to the `mode` setting in `themeSettings`. To sync with your app's dark mode:
+
+```tsx
+function App() {
+  const [isDark, setIsDark] = useState(false);
+
+  return (
+    <Auth0ComponentProvider
+      themeSettings={{
+        mode: isDark ? "dark" : "light",
+      }}
+    >
+      <YourApp />
+    </Auth0ComponentProvider>
+  );
+}
+```
+
+Or use system preference:
+
+```tsx
+const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+<Auth0ComponentProvider
+  themeSettings={{ mode: prefersDark ? "dark" : "light" }}
+>
+```
+
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+**Next.js users:** Include your proxy mode props (`mode="proxy"`, `domain`, `proxyConfig`) on `Auth0ComponentProvider` as shown in [Configure Auth0ComponentProvider](/docs/get-started/universal-components/auth0-component-provider).
+
+</Callout>
+
+  </Tab>
+
+  <Tab title="Tailwind">
+
+## Get started
+
+Auth0 Universal Components work natively with Tailwind v4 (including shadcn). Instead of importing a pre-built stylesheet, your own Tailwind build generates the component CSS.
+
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+**Requires Tailwind v4.** If you're on Tailwind v3, use the **Without Tailwind** tab — the scoped stylesheet works alongside any Tailwind version.
+
+</Callout>
+
+1. Add the imports to your CSS file.
+
+```css
+@import "tailwindcss";
+@import "@auth0/universal-components-react/tailwind";
+@import "@auth0/universal-components-core/styles/globals.css";
+```
+
+2. Map your theme variables.
+
+If you're using shadcn, this is already in your CSS. Otherwise, add the following `@theme` block:
+
+```css
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+}
+```
+
+3. Define your brand color.
+
+```css
+:root {
+  --primary: #4f46e5; /* your brand color */
+  --primary-foreground: #ffffff; /* text on buttons */
+}
+```
+
+Done. All buttons, links, and active states now use your brand.
+
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+**Next.js:** Set up your provider with proxy mode as shown in [Configure Auth0ComponentProvider](/docs/get-started/universal-components/auth0-component-provider), then follow the CSS steps above.
+
+</Callout>
+
+---
+
+## Theme presets
+
+Pass `themeSettings` to `Auth0ComponentProvider` to switch between built-in themes.
+
+```tsx
+<Auth0ComponentProvider
+  themeSettings={{
+    mode: "light", // 'light' | 'dark'
+    theme: "default", // 'default' | 'minimal' | 'rounded'
+  }}
+>
+  <App />
+</Auth0ComponentProvider>
+```
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Preset</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>default</code></td>
+      <td>Standard Auth0 look with balanced shadows and borders</td>
+    </tr>
+    <tr>
+      <td><code>minimal</code></td>
+      <td>Reduced visual weight with fewer shadows and lighter borders</td>
+    </tr>
+    <tr>
+      <td><code>rounded</code></td>
+      <td>Increased border radii for a softer appearance</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## CSS variable reference
+
+All visual properties are driven by CSS custom properties. Override them in your stylesheet or via the `themeSettings.variables` prop.
+
+<Tabs>
+  <Tab title="Colors (Light)">
+
+```css
+:root {
+  /* Brand */
+  --primary: oklch(37% 0 0);              /* buttons, links, active states */
+  --primary-foreground: oklch(100% 0 0);  /* text on primary surfaces */
+
+  /* Surfaces */
+  --background: oklch(100% 0 0);          /* page background */
+  --foreground: oklch(9% 0 0);            /* default text */
+  --card: oklch(100% 0 0);                /* card background */
+  --card-foreground: oklch(0% 0 0);       /* text inside cards */
+  --popover: oklch(100% 0 0);             /* dropdown/dialog background */
+  --input: oklch(100% 0 0);               /* input field background */
+
+  /* Secondary & muted */
+  --secondary: oklch(96% 0 0);
+  --muted: oklch(96% 0 0);                /* disabled backgrounds */
+  --muted-foreground: oklch(45% 0 0);     /* placeholder text */
+
+  /* Accent & destructive */
+  --accent: oklch(97% 0 0);               /* hover highlights */
+  --destructive: oklch(93% 0.03 17);      /* error states */
+
+  /* Borders */
+  --border: oklch(89% 0 0);
+  --ring: oklch(89% 0 0);                 /* focus ring */
+}
+```
+
+  </Tab>
+
+  <Tab title="Colors (Dark)">
+
+```css
+:root {
+  /* Brand */
+  --primary: oklch(70% 0.15 250);         /* brighter for dark backgrounds */
+  --primary-foreground: oklch(10% 0 0);
+
+  /* Surfaces */
+  --background: oklch(12% 0 0);
+  --foreground: oklch(95% 0 0);
+  --card: oklch(15% 0 0);
+  --card-foreground: oklch(95% 0 0);
+  --popover: oklch(15% 0 0);
+  --input: oklch(18% 0 0);
+
+  /* Secondary & muted */
+  --secondary: oklch(20% 0 0);
+  --muted: oklch(20% 0 0);
+  --muted-foreground: oklch(60% 0 0);
+
+  /* Accent & destructive */
+  --accent: oklch(25% 0 0);
+  --destructive: oklch(30% 0.15 17);
+
+  /* Borders */
+  --border: oklch(25% 0 0);
+  --ring: oklch(35% 0 0);
+}
+```
+
+  </Tab>
+
+  <Tab title="Border Radius">
+
+```css
+:root {
+  --radius-sm:  4px;    /* tags, chips */
+  --radius-md:  6px;    /* small elements */
+  --radius-lg:  10px;   /* buttons, inputs */
+  --radius-xl:  12px;   /* cards */
+  --radius-2xl: 16px;   /* modals, large panels */
+  --radius-xs:  2px;
+  --radius-3xl: 20px;
+  --radius-4xl: 24px;
+  --radius-5xl: 32px;
+}
+```
+
+  </Tab>
+
+  <Tab title="Typography">
+
+```css
+:root {
+  --font-size-page-header:      2.25rem;   /* 36px - main title */
+  --font-size-heading:          1.5rem;    /* 24px - section headings */
+  --font-size-title:            1.25rem;   /* 20px - card titles */
+  --font-size-subtitle:         1.125rem;  /* 18px - secondary headings */
+  --font-size-body:             1rem;      /* 16px - body text */
+  --font-size-paragraph:        0.875rem;  /* 14px - descriptions */
+  --font-size-label:            0.875rem;  /* 14px - form labels */
+  --font-size-page-description: 0.875rem;  /* 14px - subtitles */
+}
+```
+
   </Tab>
 </Tabs>
 
@@ -350,7 +539,7 @@ Override these values when using `mode: "dark"` or in a `.dark` class scope.
 Every component accepts a `styling` prop for targeted overrides without affecting global styles.
 
 <Callout icon="file-lines" color="#0EA5E9" iconType="regular">
-The `styling` prop **always** uses `--auth0-*` prefixed names for colors, regardless of your CSS setup. This is because the prop sets inline styles directly on the component wrapper, bypassing both the scoped CSS and your Tailwind build.
+The `styling` prop **always** uses `--auth0-*` prefixed names for colors (e.g., `--auth0-primary`), even in Tailwind projects.
 
 </Callout>
 
@@ -417,36 +606,14 @@ The `styling` prop **always** uses `--auth0-*` prefixed names for colors, regard
 
 ### Brand colors
 
-<Tabs>
-  <Tab title="Scoped (React / Next.js)">
 ```css
 :root {
-  /* Using hex directly */
-  --auth0-primary: #4f46e5;
-  --auth0-primary-foreground: #ffffff;
-
-  /* Or oklch for better color manipulation */
-  --auth0-primary: oklch(50% 0.2 265); /* purple */
-}
-```
-  </Tab>
-  <Tab title="Tailwind v4 / shadcn">
-```css
-:root {
-  /* Using hex directly */
   --primary: #4f46e5;
   --primary-foreground: #ffffff;
-
-  /* Or oklch for better color manipulation */
-  --primary: oklch(50% 0.2 265); /* purple */
 }
 ```
-  </Tab>
-</Tabs>
 
 ### Soft corners
-
-For a more rounded aesthetic across all components:
 
 ```css
 :root {
@@ -457,8 +624,6 @@ For a more rounded aesthetic across all components:
 ```
 
 ### Compact typography
-
-For denser UIs:
 
 ```css
 :root {
@@ -505,3 +670,6 @@ const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 **Next.js users:** Include your proxy mode props (`mode="proxy"`, `domain`, `proxyConfig`) on `Auth0ComponentProvider` as shown in [Configure Auth0ComponentProvider](/docs/get-started/universal-components/auth0-component-provider).
 
 </Callout>
+
+  </Tab>
+</Tabs>
