@@ -518,7 +518,6 @@
                       "docs/get-started/universal-components/universal-components-overview",
                       "docs/get-started/universal-components/auth0-component-provider",
                       "docs/get-started/universal-components/universal-components-style",
-                      "docs/get-started/universal-components/universal-components-style-alt",
                       {
                         "group": "My Organization",
                         "pages": [
