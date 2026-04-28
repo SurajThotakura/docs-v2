@@ -516,8 +516,20 @@
                     "group": "Universal Components",
                     "pages": [
                       "docs/get-started/universal-components/universal-components-overview",
-                      "docs/get-started/universal-components/auth0-component-provider",
-                      "docs/get-started/universal-components/universal-components-style",
+                      {
+                        "group": "Web foundations",
+                        "pages": [
+                          "docs/get-started/universal-components/auth0-component-provider",
+                          "docs/get-started/universal-components/universal-components-style"
+                        ]
+                      },
+                      {
+                        "group": "Native foundations",
+                        "pages": [
+                          "docs/get-started/universal-components/native/native-overview",
+                          "docs/get-started/universal-components/native/native-theming"
+                        ]
+                      },
                       {
                         "group": "My Organization",
                         "pages": [
@@ -542,6 +554,14 @@
                               "docs/get-started/universal-components/my-organization/organization-management/edit-organization-details"
                             ]
                           }
+                        ]
+                      },
+                      {
+                        "group": "My Account",
+                        "pages": [
+                          "docs/get-started/universal-components/my-account/build-account-security",
+                          "docs/get-started/universal-components/my-account/auth-methods-management",
+                          "docs/get-started/universal-components/my-account/factors/passkeys"
                         ]
                       }
                     ]

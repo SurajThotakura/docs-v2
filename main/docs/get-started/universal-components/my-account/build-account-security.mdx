@@ -1,0 +1,285 @@
+---
+title: Build a Self-Service Account Security Interface with My Account API
+description: Describes how to use Universal Components to build self-service account security interfaces with Auth0's My Account API on iOS and Android.
+sidebarTitle: Build Account Security UI
+---
+
+<Warning>
+  Auth0 Universal Components is currently in Beta. APIs may change before the
+  stable release. To learn more, read [Product Release
+  Stages](/docs/troubleshoot/product-lifecycle/product-release-stages).
+</Warning>
+
+Universal Components allows you to build a self-service account security UI within your native iOS and Android applications. This enables your end users to manage their own authentication methods — MFA factors, passkeys, and recovery codes — directly inside your app, without leaving for a browser or contacting support.
+
+## How it works
+
+Universal Components leverage the [My Account API](/docs/manage-users/my-account-api), which operates on user-scoped tokens, to render an authentication-methods management UI inside your app. When an authenticated user opens your account-settings screen, your Auth0 SDK (Auth0.swift on iOS, Auth0.Android on Android) retrieves an Access Token scoped to the My Account API audience. The components use this token to call the API as the logged-in user, ensuring each user can only modify their own authentication methods.
+
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+  My Account components are for **end-user self-service**. For **delegated admin** UI where a user manages an Auth0 Organization, see [Build a Delegated Admin Interface](/docs/get-started/universal-components/my-organization/build-delegated-admin).
+</Callout>
+
+### Available components
+
+Each component is backed by the [My Account API](/docs/api/myaccount) and covers one or more authentication methods.
+
+| **Component** | **API endpoint** |
+| :--- | :--- |
+| **Auth Methods Management** — `MyAccountAuthMethodsView` (iOS) / `AuthenticatorSettingsComponent` (Android). Enrolls, lists, and removes every authentication method on the user's account: Email OTP, SMS OTP, TOTP (Authenticator app), Push via Auth0 Guardian, Passkeys, and Recovery Codes. | `/me/v1/authentication-methods` |
+
+## Configure Auth0 Dashboard
+
+Before using any My Account components, you need to configure your Auth0 tenant with the proper [APIs](/docs/api), applications, and [scopes](/docs/api/myaccount).
+
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+  **Auth0 Dashboard configuration** — Complete all steps below before initializing the SDK.
+</Callout>
+
+### Create Application
+
+1. Navigate to [**Auth0 Dashboard > Applications > Applications**](https://manage.auth0.com/#/applications). Select **Create Application**.
+2. Choose **Native**.
+3. In the **Settings** tab, add the callback URL scheme used by your mobile app:
+    <br />A. **iOS:** `YOUR_AUTH0_DOMAIN://YOUR_BUNDLE_ID/ios/YOUR_BUNDLE_ID/callback`
+    <br />B. **Android:** `YOUR_AUTH0_DOMAIN://YOUR_PACKAGE_NAME/android/YOUR_PACKAGE_NAME/callback`
+4. Add matching logout URLs.
+
+### Enable the My Account API
+
+1. Navigate to [**Dashboard > Applications > APIs**](https://manage.auth0.com/#/apis).
+2. Select **[My Account API](/docs/api/myaccount)** and ensure it is enabled for your tenant.
+
+### Configure scopes
+
+Request the scopes your app needs from the My Account API when obtaining the user's access token.
+
+<Accordion title="Required scopes">
+```
+create:me:authentication_methods
+read:me:authentication_methods
+update:me:authentication_methods
+delete:me:authentication_methods
+```
+</Accordion>
+
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+  The user's token only includes permissions they were granted during login. Request all four scopes if you want users to enroll, review, and remove authentication methods.
+</Callout>
+
+### Configure passkeys (optional)
+
+Skip this step if you are not enabling passkey enrollment.
+
+1. Navigate to [**Dashboard > Authentication > Database**](https://manage.auth0.com/#/connections/database). Open the database connection you want passkeys enabled on.
+2. Under **Passkey settings**, toggle **Require Passkey Enrollment** as needed for your policy.
+3. Register your mobile apps so the platform authenticator can issue credentials for your Auth0 tenant:
+    <br />A. **iOS:** add your app's bundle ID under **Allowed iOS Applications**.
+    <br />B. **Android:** add your app's package name and SHA-256 signing fingerprints under **Allowed Android Applications**. Obtain the fingerprint with `keytool -list -v -keystore /path/to/keystore -alias YOUR_ALIAS | grep SHA256`, or copy it from Play Console > Setup > App signing for Play App Signing.
+
+Auth0 publishes the platform association files (`apple-app-site-association` on iOS, `assetlinks.json` on Android) on your tenant domain automatically.
+
+## Configure your app
+
+<Tabs>
+<Tab title="iOS">
+
+### Install the SDK
+
+Install `Auth0UniversalComponents` via Swift Package Manager (recommended), CocoaPods, or Carthage. See [Auth0 Universal Components for Native Apps](/docs/get-started/universal-components/native/native-overview) for installation details and platform requirements.
+
+### Initialize the SDK
+
+Call `Auth0UniversalComponentsSDKInitializer.initialize(...)` once at app start — typically in your `App` struct's `init`. If your app already uses `Auth0.plist` to configure Auth0.swift, add `ClientId`, `Domain`, and `Audience` keys and call:
+
+```swift App.swift
+import SwiftUI
+import Auth0
+import Auth0UniversalComponents
+
+@main
+struct MyApp: App {
+    init() {
+        Auth0UniversalComponentsSDKInitializer.initialize(
+            tokenProvider: CredentialsManager(authentication: Auth0.authentication())
+        )
+    }
+
+    var body: some Scene {
+        WindowGroup { ContentView() }
+    }
+}
+```
+
+Or pass values directly in code:
+
+```swift App.swift
+Auth0UniversalComponentsSDKInitializer.initialize(
+    domain: "YOUR_AUTH0_DOMAIN",
+    clientId: "YOUR_CLIENT_ID",
+    audience: "https://YOUR_AUTH0_DOMAIN/me/",
+    tokenProvider: CredentialsManager(authentication: Auth0.authentication())
+)
+```
+
+### Configure the token provider
+
+The `TokenProvider` protocol is how the SDK asks your app for credentials. Auth0.swift's `CredentialsManager` already conforms — use it for production integrations and avoid hand-rolling a custom implementation unless you have storage requirements Auth0.swift doesn't meet.
+
+<Accordion title="Custom TokenProvider">
+If you manage credentials yourself, implement all four methods:
+
+```swift
+struct AppTokenProvider: TokenProvider {
+    func fetchCredentials() async throws -> Credentials {
+        // Return the user's login credentials.
+    }
+    func storeCredentials(credentials: Credentials) {
+        // Persist new or refreshed credentials.
+    }
+    func store(apiCredentials: APICredentials, for audience: String) {
+        // Persist My Account API credentials keyed by audience.
+    }
+    func fetchAPICredentials(audience: String, scope: String) async throws -> APICredentials {
+        // Return cached My Account API credentials, refreshing if expired.
+    }
+}
+```
+</Accordion>
+
+### Configure passkeys (optional)
+
+Pass a `PasskeysConfiguration` to override default passkey behavior. All fields are optional.
+
+```swift
+let passkeys = PasskeysConfiguration(
+    userIdentityId: "auth0|abc123",
+    connection: "Username-Password-Authentication"
+)
+
+Auth0UniversalComponentsSDKInitializer.initialize(
+    passkeyConfiguration: passkeys,
+    tokenProvider: credentialsManager
+)
+```
+
+Add the Associated Domains entitlement to your Xcode target so the platform authenticator will issue credentials for your Auth0 tenant:
+
+```
+webcredentials:YOUR_AUTH0_DOMAIN
+```
+
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+  Passkeys require iOS 16.6+, macOS 13.5+, or visionOS 1.0+.
+</Callout>
+
+</Tab>
+
+<Tab title="Android">
+
+### Install the SDK
+
+Install `com.auth0.universalcomponents:universal-components` via Gradle. See [Auth0 Universal Components for Native Apps](/docs/get-started/universal-components/native/native-overview) for installation details and platform requirements.
+
+### Initialize the SDK
+
+Call `Auth0UniversalComponents.initialize(...)` once at app start — typically from your `Application` subclass or from `onCreate` in the launcher `Activity`.
+
+```kotlin MainActivity.kt
+import com.auth0.android.Auth0
+import com.auth0.android.authentication.AuthenticationAPIClient
+import com.auth0.android.authentication.storage.CredentialsManager
+import com.auth0.android.authentication.storage.SharedPreferencesStorage
+import com.auth0.universalcomponents.Auth0UniversalComponents
+import com.auth0.universalcomponents.token.DefaultTokenProvider
+
+class MainActivity : ComponentActivity() {
+
+    private val account by lazy {
+        Auth0.getInstance(
+            getString(R.string.com_auth0_client_id),
+            getString(R.string.com_auth0_domain)
+        )
+    }
+
+    private val credentialsManager by lazy {
+        CredentialsManager(
+            AuthenticationAPIClient(account),
+            SharedPreferencesStorage(this)
+        )
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        Auth0UniversalComponents.initialize(
+            account = account,
+            tokenProvider = DefaultTokenProvider(credentialsManager),
+            scheme = getString(R.string.com_auth0_scheme)
+        )
+
+        setContent { MyApp() }
+    }
+}
+```
+
+### Configure the token provider
+
+`DefaultTokenProvider` wraps the Auth0.Android `CredentialsManager`. Use it unless you need custom token storage.
+
+<Accordion title="Custom TokenProvider">
+If you manage tokens outside the Auth0.Android `CredentialsManager`, implement the interface directly:
+
+```kotlin
+class AppTokenProvider : TokenProvider {
+    override suspend fun fetchCredentials(): Credentials {
+        // Return the user's login credentials.
+    }
+    override suspend fun fetchApiCredentials(
+        audience: String,
+        scope: String?
+    ): APICredentials {
+        // Return cached My Account API credentials, refreshing if expired.
+    }
+    override suspend fun saveApiCredentials(
+        audience: String,
+        credentials: APICredentials
+    ) {
+        // Persist the freshly issued API credentials.
+    }
+}
+```
+</Accordion>
+
+### Configure passkeys (optional)
+
+Pass a `PasskeyConfiguration` to customize how the SDK enrolls passkeys through the AndroidX Credential Manager.
+
+```kotlin
+import androidx.credentials.CredentialManager
+import com.auth0.universalcomponents.PasskeyConfiguration
+
+val passkeyConfiguration = PasskeyConfiguration(
+    credentialManager = CredentialManager.create(this),
+    connection = "Username-Password-Authentication",
+    userIdentity = "auth0|abc123"
+)
+
+Auth0UniversalComponents.initialize(
+    account = account,
+    tokenProvider = DefaultTokenProvider(credentialsManager),
+    scheme = getString(R.string.com_auth0_scheme),
+    passkeyConfiguration = passkeyConfiguration
+)
+```
+
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+  Passkeys require Android 14+ for the full Credential Manager experience. On Android 9–13 they sync through Google Password Manager on devices with up-to-date Play Services.
+</Callout>
+
+</Tab>
+</Tabs>
+
+<Check>
+  Users must be authenticated before you render any component. Once the SDK is initialized and your `TokenProvider` is wired up, drop the [Auth Methods Management](/docs/get-started/universal-components/my-account/auth-methods-management) component into your settings screen to give users full MFA, passkey, and recovery-code self-service.
+</Check>

@@ -1,0 +1,306 @@
+---
+title: Auth Methods Management
+description: Render a full-screen UI that lets users enroll, review, and remove MFA factors, passkeys, and recovery codes using the Auth0 My Account API.
+sidebarTitle: Auth Methods Management
+---
+
+<Warning>
+  Auth0 Universal Components is currently in Beta. APIs may change before the
+  stable release. To learn more, read [Product Release
+  Stages](/docs/troubleshoot/product-lifecycle/product-release-stages).
+</Warning>
+
+The Auth Methods Management component renders a complete UI for managing a user's authentication methods. It ships as `MyAccountAuthMethodsView` on iOS and `AuthenticatorSettingsComponent` on Android. Both are one-line views that handle every enrollment, verification, listing, and removal flow against the [My Account API](/docs/manage-users/my-account-api) — you do not orchestrate navigation, call endpoints, or manage state.
+
+<Frame caption="Auth Methods Management component showing enrolled passkeys, push notifications via Guardian, authenticator app, email OTP, and recovery codes">
+  <img src="/docs/images/universal-components/my-account/auth-methods-management.png" alt="Auth Methods Management component root screen with Sign-in methods (Passkeys) and Verification methods (Push Notifications via Guardian, Authenticator App, Email OTP, Recovery Code) sections" style={{ width: "50%" }} />
+</Frame>
+
+## Setup requirements
+
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+  Before rendering this component, follow [Build a Self-Service Account Security Interface](/docs/get-started/universal-components/my-account/build-account-security) to install the SDK, configure your Auth0 tenant, and initialize the SDK with a token provider. The component reads its configuration, token provider, and passkey settings from the initialized SDK singleton — it will not function without them.
+</Callout>
+
+## Supported factors
+
+The component handles every factor Auth0 supports through the My Account API. Each factor's screens inherit the component's active theme — see [Customize Style and Themes](/docs/get-started/universal-components/native/native-theming) for the full token catalog. Enable the factors you want on the Auth0 tenant; the component automatically shows and hides rows based on what the tenant exposes.
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Factor</th>
+      <th>What the component renders</th>
+      <th>SDK notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="/docs/secure/multi-factor-authentication/configure-mfa-email">Email OTP</a></td>
+      <td>Email input → 6-digit OTP verification</td>
+      <td>Platform OTP autofill (iOS QuickType, Android keyboard autofill) works against the OTP field.</td>
+    </tr>
+    <tr>
+      <td><a href="/docs/secure/multi-factor-authentication/configure-sms-notifications-for-mfa">SMS OTP</a></td>
+      <td>Country-code picker + phone entry → 6-digit OTP verification</td>
+      <td>Android <a href="https://developers.google.com/identity/sms-retriever/overview">SMS Retriever API</a> is not used; the SMS body has no app hash. Autofill via the system keyboard works normally.</td>
+    </tr>
+    <tr>
+      <td><a href="/docs/secure/multi-factor-authentication/configure-otp">TOTP (Authenticator app)</a></td>
+      <td>QR code with manual-entry key → 6-digit OTP verification</td>
+      <td>Renders the standard <code>otpauth://</code> payload; no custom brand logo injection into the QR.</td>
+    </tr>
+    <tr>
+      <td><a href="/docs/secure/multi-factor-authentication/enable-push-notifications-for-mfa">Push notifications</a></td>
+      <td>QR code for <a href="/docs/secure/multi-factor-authentication/auth0-guardian">Auth0 Guardian</a> scan → "waiting for approval" state</td>
+      <td>End users need the public Auth0 Guardian app. Enterprise customers with a branded Guardian SDK build must surface their own install link outside the component.</td>
+    </tr>
+    <tr>
+      <td><a href="/docs/get-started/universal-components/my-account/factors/passkeys">Passkeys</a></td>
+      <td>Educational screen → OS biometric prompt → enrolled entry in the list</td>
+      <td>Requires Apple Associated Domains (iOS 16.6+) or Digital Asset Links (Android 14+). See the dedicated page for app-side platform setup.</td>
+    </tr>
+    <tr>
+      <td><a href="/docs/secure/multi-factor-authentication/configure-recovery-codes-for-mfa">Recovery codes</a></td>
+      <td>Display-once code list with copy action + "I've saved my codes" confirmation</td>
+      <td>Codes are displayed to the user and never returned to the caller. Copy-to-clipboard uses the platform's standard clipboard API.</td>
+    </tr>
+  </tbody>
+</table>
+
+<Tabs>
+
+<Tab title="iOS">
+
+## Getting started
+
+Place `MyAccountAuthMethodsView()` anywhere in your SwiftUI hierarchy — typically behind a settings navigation link.
+
+```swift SettingsView.swift
+import SwiftUI
+import Auth0UniversalComponents
+
+struct SettingsView: View {
+    var body: some View {
+        NavigationStack {
+            List {
+                NavigationLink(destination: MyAccountAuthMethodsView()) {
+                    Label("Authentication Methods", systemImage: "lock.shield")
+                }
+            }
+            .navigationTitle("Account Settings")
+        }
+    }
+}
+```
+
+The view takes no initializer parameters. All customization happens through SwiftUI view modifiers and environment values.
+
+## Parameters
+
+`MyAccountAuthMethodsView` has a no-argument initializer. Behavior is customized through view modifiers and environment values.
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Modifier / environment</th>
+      <th>Type</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>.auth0Theme(_:)</code></td>
+      <td><code>Auth0Theme</code></td>
+      <td>Override design tokens — colors, typography, spacing, radius, sizes. See <a href="/docs/get-started/universal-components/native/native-theming">Customize Style and Themes</a>.</td>
+    </tr>
+    <tr>
+      <td><code>.embeddedInNavigationStack()</code></td>
+      <td>—</td>
+      <td>Mark the view as embedded in a host <code>NavigationStack</code> so the SDK pushes onto your stack instead of creating its own.</td>
+    </tr>
+    <tr>
+      <td><code>\.hostNavigationPath</code></td>
+      <td><code>Binding&lt;NavigationPath&gt;</code></td>
+      <td>Environment binding the SDK uses to push destinations onto the host navigation stack. Required when you call <code>.embeddedInNavigationStack()</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Customization
+
+Theming is applied to the component as a whole; individual factor screens inherit the active theme. Pass a custom `Auth0Theme` to override design tokens across every screen the component renders.
+
+```swift
+MyAccountAuthMethodsView()
+    .auth0Theme(
+        Auth0Theme(
+            colors: DefaultAuth0ColorTokens(
+                background: DefaultAuth0BackgroundColorTokens(primary: Color("BrandBlue")),
+                text: DefaultAuth0TextColorTokens(onPrimary: .white)
+            )
+        )
+    )
+```
+
+For the full token catalog and dark-mode patterns, see [Customize Style and Themes](/docs/get-started/universal-components/native/native-theming).
+
+## Advanced — Embed in a host NavigationStack
+
+By default `MyAccountAuthMethodsView` manages its own `NavigationStack`. If your app already owns a navigation stack, nesting a second stack breaks back-button behavior and swipe-to-go-back gestures. Embed `MyAccountAuthMethodsView` into your stack instead.
+
+```swift AccountScreen.swift
+import SwiftUI
+import Auth0UniversalComponents
+
+struct AccountScreen: View {
+    @State private var path = NavigationPath()
+
+    var body: some View {
+        NavigationStack(path: $path) {
+            List {
+                NavigationLink("Authentication methods", value: "auth-methods")
+            }
+            .navigationDestination(for: String.self) { value in
+                if value == "auth-methods" {
+                    MyAccountAuthMethodsView()
+                        .embeddedInNavigationStack()
+                }
+            }
+        }
+        .environment(\.hostNavigationPath, $path)
+    }
+}
+```
+
+Two requirements in embedded mode:
+
+1. Apply `.embeddedInNavigationStack()` to `MyAccountAuthMethodsView` so it skips creating an inner stack.
+2. Inject `\.hostNavigationPath` on the outer `NavigationStack` so the SDK knows which path binding to push onto.
+
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+  The SDK also exposes a `Router<Route>` helper class for apps that want a type-safe navigation controller for their own routes. It is not required to drive the SDK's internal navigation — only use it if you want to apply the same pattern to your app's screens.
+</Callout>
+
+## Localization
+
+The iOS SDK does not currently ship localized strings. User-facing copy is presented in English. If localization is a blocker for your integration, file a feature request against [`ui-components-ios`](https://github.com/auth0/ui-components-ios/issues).
+
+</Tab>
+
+<Tab title="Android">
+
+## Getting started
+
+Call `AuthenticatorSettingsComponent()` from any composable. The SDK handles all internal navigation between enrollment, verification, and management screens.
+
+```kotlin LoginSecurityScreen.kt
+import androidx.compose.runtime.Composable
+import com.auth0.universalcomponents.presentation.ui.mfa.AuthenticatorSettingsComponent
+
+@Composable
+fun LoginSecurityScreen() {
+    AuthenticatorSettingsComponent()
+}
+```
+
+## Parameters
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Parameter</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>modifier</code></td>
+      <td><code>Modifier</code></td>
+      <td><code>Modifier</code></td>
+      <td>Standard Compose modifier.</td>
+    </tr>
+    <tr>
+      <td><code>themeConfiguration</code></td>
+      <td><code>Auth0ThemeConfiguration</code></td>
+      <td><code>Auth0ThemeConfiguration.Default</code></td>
+      <td>Override design tokens — colors, typography, shapes, dimensions, sizes. See <a href="/docs/get-started/universal-components/native/native-theming">Customize Style and Themes</a>.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Customization
+
+Theming is applied to the component as a whole; individual factor screens inherit the active theme. Pass a custom `Auth0ThemeConfiguration` to override design tokens across every screen the component renders.
+
+```kotlin
+AuthenticatorSettingsComponent(
+    themeConfiguration = Auth0ThemeConfiguration(
+        color = Auth0Color.light().copy(
+            backgroundPrimary = Color(0xFF0066CC),
+            textOnPrimary = Color.White
+        )
+    )
+)
+```
+
+For the full token catalog and dark-mode patterns, see [Customize Style and Themes](/docs/get-started/universal-components/native/native-theming).
+
+## Advanced — Compose NavHost integration
+
+`AuthenticatorSettingsComponent` participates in Compose's `NavHost` when present and does not need special wiring. Place it like any other composable — if it is a destination in your `NavHost`, back-navigation defers to the host's `NavController`.
+
+```kotlin
+@Composable
+fun AccountNavGraph(navController: NavHostController) {
+    NavHost(navController, startDestination = "settings") {
+        composable("settings") { SettingsScreen(navController) }
+        composable("auth-methods") { AuthenticatorSettingsComponent() }
+    }
+}
+```
+
+Internally, the SDK manages its own nested navigation between enrollment, verification, and management screens. That internal graph is isolated from your app's `NavController`, so no naming collisions can occur.
+
+## Localization
+
+All user-facing strings live in the SDK's `values/strings.xml`. Override any string in your app by redefining the same key in your own `values/strings.xml`:
+
+```xml app/src/main/res/values/strings.xml
+<resources>
+    <string name="uc_continue">Next</string>
+</resources>
+```
+
+Your resource value shadows the SDK default at build time. To ship localized copy, provide translated `values-<locale>/strings.xml` files that use the same keys.
+
+</Tab>
+
+</Tabs>
+
+## Known limitations
+
+- **No standalone factor components on iOS.** Every factor renders inside the component. There is no public API to enroll, verify, or remove a single factor from a different part of your app.
+- **No standalone list/remove components.** Neither SDK ships public components for listing enrolled factors or removing them outside the component. Use the Auth methods component for the full management experience.
+- **Post-login passkey prompts are not supported.** Prompting a user to save a passkey immediately after sign-in (separate from the settings screen) is not covered by this SDK today. Track [`ui-components-ios`](https://github.com/auth0/ui-components-ios/issues) and [`universal-components-android`](https://github.com/auth0/universal-components-android/issues) for updates.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card
+    title="Build a Self-Service Account Security Interface"
+    icon="gear"
+    href="/docs/get-started/universal-components/my-account/build-account-security"
+  >
+    Dashboard setup, SDK initialization, token provider, and passkey configuration.
+  </Card>
+  <Card
+    title="Customize style and themes"
+    icon="palette"
+    href="/docs/get-started/universal-components/native/native-theming"
+  >
+    Design token reference and customization patterns for iOS and Android.
+  </Card>
+</CardGroup>

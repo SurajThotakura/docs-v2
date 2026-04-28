@@ -1,0 +1,204 @@
+---
+title: Auth0 Universal Components for Native Apps
+description: Install the Auth0 Universal Components SDK for iOS and Android, review platform requirements, and prepare your app to render Auth0-powered UI.
+sidebarTitle: Native Overview
+---
+
+<Warning>
+  Auth0 Universal Components is currently in Beta. APIs may change before the
+  stable release. To learn more, read [Product Release
+  Stages](/docs/troubleshoot/product-lifecycle/product-release-stages).
+</Warning>
+
+Auth0 Universal Components for native apps ship pre-built, embeddable UI for identity flows on iOS (SwiftUI) and Android (Jetpack Compose). This page covers installation and platform requirements. Once the SDK is installed, continue to [Build a Self-Service Account Security Interface](/docs/get-started/universal-components/my-account/build-account-security) to wire authentication and render the auth-methods management UI.
+
+## Platform support
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Platform</th>
+      <th>Minimum OS</th>
+      <th>Language / Toolchain</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>iOS</td>
+      <td>iOS 16.0+, macOS 13.0+, visionOS 1.0+</td>
+      <td>Swift 5+ (6 preferred), Xcode 16+</td>
+    </tr>
+    <tr>
+      <td>Android</td>
+      <td>API 30 (Android 11)</td>
+      <td>Kotlin 2.2+, JDK 17, Jetpack Compose BOM 2024.09+</td>
+    </tr>
+  </tbody>
+</table>
+
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+  Passkeys require iOS 16.6+ (or macOS 13.5+, visionOS 1.0+) on Apple platforms, and Android 14+ for platform-provided credential sync on Android.
+</Callout>
+
+## Install the SDK
+
+<Tabs>
+<Tab title="iOS">
+
+The iOS SDK is distributed as `Auth0UniversalComponents`. Swift Package Manager is the recommended installer.
+
+### Swift Package Manager
+
+In Xcode, open **File → Add Package Dependencies** and enter:
+
+```
+https://github.com/auth0/ui-components-ios.git
+```
+
+Select version `1.0.0` or later, then add `Auth0UniversalComponents` to your app target.
+
+### CocoaPods
+
+Add the pod to your `Podfile`:
+
+```ruby Podfile
+pod 'Auth0UniversalComponents', '~> 1.0.0'
+```
+
+Then run:
+
+```bash
+pod install
+```
+
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+  **Known issue:** The 1.0.0 CocoaPods release omits bundled Media, Colors, and Fonts resources. If your UI renders without the expected styling, switch to Swift Package Manager until the next podspec release.
+</Callout>
+
+### Carthage
+
+Add the following to your `Cartfile`:
+
+```
+github "auth0/ui-components-ios" ~> 1.0.0
+```
+
+Then run:
+
+```bash
+carthage update --use-xcframeworks
+```
+
+### Verify the install
+
+Import the module in a Swift file to confirm the framework resolves:
+
+```swift
+import Auth0UniversalComponents
+```
+
+### Sample app
+
+See the `AppUIComponents/` target in [ui-components-ios](https://github.com/auth0/ui-components-ios) for a reference implementation, including `AppUIComponentsApp.swift` (SDK initialization) and `Common/ThemeManager.swift` (runtime theme switching).
+
+</Tab>
+
+<Tab title="Android">
+
+The Android SDK is distributed through Maven Central as `com.auth0.universalcomponents:universal-components`.
+
+### Gradle
+
+Add Maven Central to your `settings.gradle` (or `settings.gradle.kts`) if it is not already listed:
+
+```groovy settings.gradle
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+        google()
+    }
+}
+```
+
+Then add the dependency to your module-level `build.gradle` (or `build.gradle.kts`):
+
+```groovy build.gradle
+dependencies {
+    implementation 'com.auth0.universalcomponents:universal-components:1.0.0'
+}
+```
+
+### Minimum versions
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Requirement</th>
+      <th>Version</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Android <code>minSdk</code></td>
+      <td>30 (Android 11)</td>
+    </tr>
+    <tr>
+      <td>Kotlin</td>
+      <td>2.2+</td>
+    </tr>
+    <tr>
+      <td>Android Gradle Plugin</td>
+      <td>8.11+</td>
+    </tr>
+    <tr>
+      <td>Jetpack Compose BOM</td>
+      <td>2024.09.00+</td>
+    </tr>
+    <tr>
+      <td>Auth0 Android SDK</td>
+      <td>3.14.0 (resolved transitively)</td>
+    </tr>
+    <tr>
+      <td>JDK</td>
+      <td>17+</td>
+    </tr>
+  </tbody>
+</table>
+
+### Configure Compose
+
+Ensure Compose is enabled in your module-level `build.gradle`:
+
+```groovy build.gradle
+android {
+    buildFeatures {
+        compose = true
+    }
+}
+```
+
+### Sample app
+
+See the `/app/` module in [ui-components-android](https://github.com/auth0/universal-components-android) for a reference implementation, including `MainActivity.kt` (Auth0 SDK setup and SDK initialization) and `LoginSecurityScreen.kt` (renders `AuthenticatorSettingsComponent`).
+
+</Tab>
+</Tabs>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Customize style and themes"
+    icon="palette"
+    href="/docs/get-started/universal-components/native/native-theming"
+  >
+    Override colors, typography, spacing, radius, and size tokens using the Auth0 design-token system.
+  </Card>
+  <Card
+    title="Build a Self-Service Account Security Interface"
+    icon="key"
+    href="/docs/get-started/universal-components/my-account/build-account-security"
+  >
+    Prepare your Auth0 tenant, initialize the SDK, and render the auth-methods management UI.
+  </Card>
+</CardGroup>

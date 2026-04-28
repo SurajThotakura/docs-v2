@@ -1,0 +1,469 @@
+---
+title: Customize Style and Themes for Native Universal Components
+description: Tailor colors, typography, spacing, corner radii, and component sizes in the iOS and Android Universal Components SDKs using Auth0 design tokens.
+sidebarTitle: Customize Style and Themes
+---
+
+<Warning>
+  Auth0 Universal Components is currently in Beta. APIs may change before the
+  stable release. To learn more, read [Product Release
+  Stages](/docs/troubleshoot/product-lifecycle/product-release-stages).
+</Warning>
+
+The native Universal Components SDKs share a design-token model: every visual property (colors, typography, spacing, corner radii, component sizes) is expressed as a named token so you can override one value without rewriting layouts. The default theme renders the standard Auth0 look without any configuration — you only supply a theme when you need to match your brand.
+
+<Tabs>
+
+<Tab title="iOS">
+
+The iOS SDK uses a SwiftUI `@Environment`-based theme. You wrap any SDK view in `.auth0Theme(_:)`, and every component under that modifier reads the injected `Auth0Theme` automatically.
+
+## Zero configuration
+
+Without a theme, the SDK renders the default Auth0 visual identity:
+
+```swift
+import SwiftUI
+import Auth0UniversalComponents
+
+struct ContentView: View {
+    var body: some View {
+        MyAccountAuthMethodsView()
+    }
+}
+```
+
+## Override a subset of tokens
+
+Pass only the tokens you need to change. Every other token falls back to the Auth0 default.
+
+```swift
+import SwiftUI
+import Auth0UniversalComponents
+
+struct ContentView: View {
+    var body: some View {
+        MyAccountAuthMethodsView()
+            .auth0Theme(
+                Auth0Theme(
+                    colors: DefaultAuth0ColorTokens(
+                        background: DefaultAuth0BackgroundColorTokens(primary: Color("BrandBlue")),
+                        text: DefaultAuth0TextColorTokens(onPrimary: .white)
+                    )
+                )
+            )
+    }
+}
+```
+
+The same shape applies to typography, spacing, radius, and sizes. For example:
+
+```swift
+Auth0Theme(
+    typography: DefaultAuth0TypographyTokens(
+        body: Auth0TextStyle(font: .custom("Lato-Regular", size: 17), tracking: 0, lineSpacing: 7),
+        label: Auth0TextStyle(font: .custom("Lato-Medium", size: 16), tracking: 0.1, lineSpacing: 5)
+    ),
+    radius: DefaultAuth0RadiusTokens(button: 24)
+)
+```
+
+## Supply a complete brand theme
+
+For full brand alignment, implement the three color category protocols and wire them into an `Auth0ColorTokens` container:
+
+```swift
+struct BrandBackground: Auth0BackgroundColorTokens {
+    var primary:       Color { Color("Background/Primary",       bundle: .main) }
+    var primarySubtle: Color { Color("Background/Primary",       bundle: .main).opacity(0.35) }
+    var inverse:       Color { Color("Background/Inverse",       bundle: .main) }
+    var accent:        Color { Color("Background/Accent",        bundle: .main) }
+    var layerTop:      Color { Color("Background/LayerTop",      bundle: .main) }
+    var layerMedium:   Color { Color("Background/LayerMedium",   bundle: .main) }
+    var layerBase:     Color { Color("Background/LayerBase",     bundle: .main) }
+    var error:         Color { Color("Background/Error",         bundle: .main) }
+    var errorSubtle:   Color { Color("Background/ErrorSubtle",   bundle: .main) }
+    var success:       Color { Color("Background/Success",       bundle: .main) }
+    var successSubtle: Color { Color("Background/SuccessSubtle", bundle: .main) }
+}
+
+struct BrandColors: Auth0ColorTokens {
+    var background: any Auth0BackgroundColorTokens { BrandBackground() }
+    var text:       any Auth0TextColorTokens       { DefaultAuth0TextColorTokens() }
+    var border:     any Auth0BorderColorTokens     { DefaultAuth0BorderColorTokens() }
+}
+
+MyAccountAuthMethodsView()
+    .auth0Theme(Auth0Theme(colors: BrandColors()))
+```
+
+## Read the theme in your own views
+
+Use `@Environment(\.auth0Theme)` to consume the same tokens in any view you build alongside the SDK:
+
+```swift
+struct MyCustomStep: View {
+    @Environment(\.auth0Theme) private var theme
+
+    var body: some View {
+        VStack(spacing: theme.spacing.md) {
+            Text("Almost there!")
+                .auth0TextStyle(theme.typography.titleLarge)
+                .foregroundStyle(theme.colors.text.bold)
+
+            Button("Continue") { /* ... */ }
+                .frame(height: theme.sizes.buttonHeight)
+                .background(theme.colors.background.primary)
+                .cornerRadius(theme.radius.button)
+        }
+        .padding(theme.spacing.md)
+    }
+}
+```
+
+## Token reference
+
+<Accordion title="Colors — Auth0ColorTokens">
+
+Colors are split across three focused protocols — `Auth0BackgroundColorTokens`, `Auth0TextColorTokens`, and `Auth0BorderColorTokens` — and aggregated into `Auth0ColorTokens`. All color assets are adaptive, so light and dark mode are handled automatically by the asset catalog.
+
+**Background — Primary**
+
+| Token | Usage |
+|---|---|
+| `background.primary` | CTA button background, primary borders |
+| `background.primarySubtle` | Low-emphasis primary background |
+| `background.inverse` | Contrast-flipped background |
+| `background.accent` | Branded or featured UI highlight |
+
+**Background — Layers**
+
+| Token | Usage |
+|---|---|
+| `background.layerTop` | Overlays and modals |
+| `background.layerMedium` | Cards and raised containers |
+| `background.layerBase` | Main app background |
+
+**Background — Feedback**
+
+| Token | Usage |
+|---|---|
+| `background.error` | Error state container |
+| `background.errorSubtle` | Subtle error banner |
+| `background.success` | Success state container |
+| `background.successSubtle` | Subtle success banner |
+
+**Text — Content**
+
+| Token | Usage |
+|---|---|
+| `text.bold` | Headings and primary body text |
+| `text.regular` | Secondary copy, descriptions, captions |
+| `text.disabled` | Disabled and placeholder text |
+
+**Text — On color surfaces**
+
+| Token | Usage |
+|---|---|
+| `text.onPrimary` | Text and icons on `background.primary` |
+| `text.onSuccess` | Text and icons on `background.success` |
+| `text.onError` | Text and icons on `background.error`, validation messages |
+
+**Border**
+
+| Token | Usage |
+|---|---|
+| `border.bold` | High-contrast or selected borders |
+| `border.regular` | Input field and card borders |
+| `border.subtle` | Delicate dividers |
+| `border.shadow` | Elevation shadow border |
+
+</Accordion>
+
+<Accordion title="Typography — Auth0TypographyTokens">
+
+Each token is an `Auth0TextStyle` bundling `font`, `tracking`, and `lineSpacing`. Apply with the `.auth0TextStyle(_:)` view modifier.
+
+| Token | Typeface | Size | Weight | Line height | Tracking | Usage |
+|---|---|---|---|---|---|---|
+| `displayLarge` | Inter | 34 pt | SemiBold | 41 pt | −0.20 pt | Hero headings, passkey enrollment |
+| `displayMedium` | Inter | 28 pt | SemiBold | 34 pt | −0.10 pt | Major screen titles, error headings |
+| `display` | Inter | 22 pt | SemiBold | 28 pt | −0.05 pt | Section-level headings |
+| `titleLarge` | Inter | 20 pt | SemiBold | 25 pt | 0 pt | Screen titles, subheading cards |
+| `title` | Inter | 17 pt | SemiBold | 24 pt | 0 pt | In-content titles |
+| `body` | Inter | 17 pt | Regular | 24 pt | 0 pt | Descriptions, body copy |
+| `bodySmall` | Inter | 15 pt | Regular | 20 pt | +0.10 pt | Secondary body copy, footnotes |
+| `label` | Inter | 16 pt | Medium | 21 pt | +0.10 pt | Button labels, form field labels |
+| `helper` | Inter | 13 pt | Regular | 18 pt | +0.20 pt | Captions, helper text |
+| `overline` | Inter | 11 pt | Regular | 16 pt | +0.77 pt | Overline and category labels |
+
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+  If Inter is not bundled in the host app, SwiftUI falls back to SF Pro automatically.
+</Callout>
+
+</Accordion>
+
+<Accordion title="Spacing — Auth0SpacingTokens">
+
+4 pt grid. Use the token name in design hand-offs, not the raw pixel value.
+
+| Token | Default | Description |
+|---|---|---|
+| `xxs` | 4 pt | Minimal gap between tightly coupled elements |
+| `xs` | 8 pt | Small gap between grouped elements |
+| `sm` | 12 pt | Medium internal padding |
+| `md` | 16 pt | Standard component and container padding |
+| `lg` | 24 pt | Larger padding for major sections |
+| `xl` | 32 pt | Extra-large padding |
+| `xxl` | 48 pt | Double-extra-large padding |
+| `xxxl` | 56 pt | Triple-extra-large padding |
+
+</Accordion>
+
+<Accordion title="Radius — Auth0RadiusTokens">
+
+| Token | Default | Usage |
+|---|---|---|
+| `small` | 8 pt | Single character-input cells (OTP, PIN digits) |
+| `medium` | 12 pt | Banner and feedback cards |
+| `inputField` | 14 pt | Text inputs, code display containers |
+| `button` | 16 pt | CTA buttons, auth-method cards |
+| `pill` | 24 pt | Pill-shaped outline buttons |
+
+</Accordion>
+
+<Accordion title="Sizes — Auth0SizeTokens">
+
+| Token | Default | Usage |
+|---|---|---|
+| `buttonHeight` | 48 pt | All primary and secondary action buttons |
+| `inputHeight` | 60 pt | Text and phone-number input fields |
+| `size4xlDimen` | 48 pt | Width of a single character-input cell |
+| `size5xlDimen` | 56 pt | Height of a single character-input cell |
+| `containerSizeLargeDimen` | 52 pt | Height of a read-only code display container |
+| `iconSmall` | 16 pt | Small icons — chevrons, info indicators, checkmarks |
+| `iconMedium` | 24 pt | Standard icons — authentication-method images |
+| `iconLarge` | 28 pt | Large icons — three-dots menu |
+
+</Accordion>
+
+</Tab>
+
+<Tab title="Android">
+
+The Android SDK uses a Jetpack Compose theme that mirrors Material 3's `MaterialTheme` pattern. Wrap SDK content in `Auth0Theme { ... }` to provide tokens, or pass `themeConfiguration` directly to `AuthenticatorSettingsComponent`. Read tokens inside any composable with `Auth0Theme.colors`, `Auth0Theme.typography`, `Auth0Theme.shapes`, `Auth0Theme.dimensions`, and `Auth0Theme.sizes`.
+
+## Zero configuration
+
+Without a theme, the SDK renders the default Auth0 visual identity:
+
+```kotlin
+@Composable
+fun MFASettingsScreen() {
+    AuthenticatorSettingsComponent()
+}
+```
+
+## Override a subset of tokens
+
+Use `Auth0Color.light().copy(...)` (or `Auth0Color.dark()` / `Auth0Typography.default().copy(...)`) to change only the tokens you care about:
+
+```kotlin
+@Composable
+fun MFASettingsScreen() {
+    AuthenticatorSettingsComponent(
+        themeConfiguration = Auth0ThemeConfiguration(
+            color = Auth0Color.light().copy(
+                backgroundPrimary = Color(0xFFFF6B00),
+                textOnPrimary = Color.White
+            )
+        )
+    )
+}
+```
+
+## Force dark mode
+
+Either wrap the component in `Auth0Theme(darkTheme = true)` or pass the dark color scheme explicitly:
+
+```kotlin
+// Option 1: Force dark mode via Auth0Theme
+@Composable
+fun MFASettingsScreen() {
+    Auth0Theme(darkTheme = true) {
+        AuthenticatorSettingsComponent()
+    }
+}
+
+// Option 2: Explicit dark color scheme
+@Composable
+fun MFASettingsScreen() {
+    AuthenticatorSettingsComponent(
+        themeConfiguration = Auth0ThemeConfiguration(
+            color = Auth0Color.dark()
+        )
+    )
+}
+```
+
+## Full brand theme
+
+Combine colors, typography, and shapes for complete brand control:
+
+```kotlin
+@Composable
+fun MFASettingsScreen() {
+    AuthenticatorSettingsComponent(
+        themeConfiguration = Auth0ThemeConfiguration(
+            color = Auth0Color.light().copy(
+                backgroundPrimary = Color(0xFF0066CC),
+                textOnPrimary = Color.White,
+                backgroundLayerBase = Color(0xFFF5F5F5),
+                backgroundLayerMedium = Color.White,
+                textBold = Color(0xFF1F1F1F),
+                textDefault = Color(0xFF636363),
+                backgroundError = Color(0xFFFF4444),
+                backgroundSuccess = Color(0xFF00CC66),
+                borderDefault = Color(0xFFE0E0E0)
+            ),
+            typography = Auth0Typography.default().copy(
+                displayMedium = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold),
+                body = TextStyle(fontSize = 18.sp)
+            ),
+            shapes = Auth0Shapes(
+                none = RoundedCornerShape(0.dp),
+                extraSmall = RoundedCornerShape(4.dp),
+                small = RoundedCornerShape(8.dp),
+                medium = RoundedCornerShape(12.dp),
+                large = RoundedCornerShape(16.dp),
+                extraLarge = RoundedCornerShape(24.dp),
+                full = RoundedCornerShape(100.dp)
+            )
+        )
+    )
+}
+```
+
+## Read theme tokens in your own composables
+
+Any composable under an `Auth0Theme { ... }` can read tokens through the accessor object:
+
+```kotlin
+@Composable
+fun CustomAuthCard() {
+    Card(
+        shape = Auth0Theme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = Auth0Theme.colors.backgroundLayerMedium
+        )
+    ) {
+        Column(modifier = Modifier.padding(Auth0Theme.dimensions.spacingMd)) {
+            Text(
+                text = "Authenticator",
+                style = Auth0Theme.typography.title,
+                color = Auth0Theme.colors.textBold
+            )
+            Text(
+                text = "Enabled",
+                style = Auth0Theme.typography.bodySmall,
+                color = Auth0Theme.colors.textDefault
+            )
+        }
+    }
+}
+```
+
+## Switch themes at runtime
+
+Hold the theme configuration in state to swap between light and dark (or brand variants) without recreating the screen:
+
+```kotlin
+@Composable
+fun MFASettingsScreen() {
+    var isDarkMode by remember { mutableStateOf(false) }
+
+    val themeConfig = Auth0ThemeConfiguration(
+        color = if (isDarkMode) Auth0Color.dark() else Auth0Color.light()
+    )
+
+    Column {
+        Switch(checked = isDarkMode, onCheckedChange = { isDarkMode = it })
+        AuthenticatorSettingsComponent(themeConfiguration = themeConfig)
+    }
+}
+```
+
+## Token reference
+
+<Accordion title="Colors — Auth0Color">
+
+Use `Auth0Color.light()` and `Auth0Color.dark()` factories as starting points and `.copy(...)` to override specific tokens.
+
+| Token | Usage |
+|---|---|
+| `backgroundPrimary`, `backgroundPrimarySubtle`, `backgroundInverse`, `backgroundAccent` | CTA and accent surfaces |
+| `backgroundLayerTop`, `backgroundLayerMedium`, `backgroundLayerBase` | Overlay / card / app-background layers |
+| `backgroundError`, `backgroundErrorSubtle`, `backgroundSuccess`, `backgroundSuccessSubtle` | Feedback surfaces |
+| `borderBold`, `borderDefault`, `borderSubtle`, `borderShadow` | Emphasis and elevation borders |
+| `textBold`, `textDefault`, `textSubtle` | Heading / body / caption text |
+| `textOnPrimary`, `textOnInverse`, `textError`, `textSuccess`, `textAccent` | Text on colored surfaces |
+
+</Accordion>
+
+<Accordion title="Typography — Auth0Typography">
+
+Every token is a Compose `TextStyle`. Override with `Auth0Typography.default().copy(...)`.
+
+| Token | Usage |
+|---|---|
+| `displayMedium`, `display` | Hero / major screen headings |
+| `titleLarge`, `title` | Screen titles, in-content titles |
+| `body`, `bodySmall` | Descriptions, body copy, footnotes |
+| `label` | Button labels, form field labels |
+| `helper`, `overline` | Captions, helper text, category labels |
+
+</Accordion>
+
+<Accordion title="Shapes — Auth0Shapes">
+
+| Token | Usage |
+|---|---|
+| `none` | No rounding |
+| `extraSmall`, `small`, `medium`, `large`, `extraLarge` | Standard rounding scale |
+| `full` | Fully rounded (pill) |
+
+</Accordion>
+
+<Accordion title="Dimensions — Auth0Dimensions">
+
+Spacing values on a 4 dp grid: `spacingXxs`, `spacingXs`, `spacingSm`, `spacingMd`, `spacingLg`, `spacingXl`, `spacingXxl`, `spacingXxxl`. Use these via `Auth0Theme.dimensions.*`.
+
+</Accordion>
+
+<Accordion title="Sizes — Auth0Sizes">
+
+Component dimensions: `buttonHeight`, `inputHeight`, icon sizes, OTP cell dimensions. Use these via `Auth0Theme.sizes.*`.
+
+</Accordion>
+
+</Tab>
+</Tabs>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card
+    title="Install the native SDK"
+    icon="download"
+    href="/docs/get-started/universal-components/native/native-overview"
+  >
+    Platform prerequisites and installation for iOS and Android.
+  </Card>
+  <Card
+    title="Build a Self-Service Account Security Interface"
+    icon="key"
+    href="/docs/get-started/universal-components/my-account/build-account-security"
+  >
+    Initialize the SDK and wire the token provider to your Auth0 tenant.
+  </Card>
+</CardGroup>

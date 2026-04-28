@@ -1,0 +1,156 @@
+---
+title: Passkeys
+description: SDK-specific behavior, app-side entitlements, and customization for the Passkey factor rendered inside the Auth Methods Management component.
+sidebarTitle: Passkeys
+---
+
+<Warning>
+  Auth0 Universal Components is currently in Beta. APIs may change before the
+  stable release. To learn more, read [Product Release
+  Stages](/docs/troubleshoot/product-lifecycle/product-release-stages).
+</Warning>
+
+The [Auth Methods Management](/docs/get-started/universal-components/my-account/auth-methods-management) component renders the Passkey enrollment flow — an educational screen, a WebAuthn registration handshake with the platform authenticator, and the enrolled-factor entry in the authenticator list. Unlike other factors, passkeys require app-side platform entitlements that the SDK cannot configure for you. This page covers the SDK-specific behavior, the required platform setup, and known limitations. For the factor itself (tenant configuration, database-connection settings, passkey UX principles), see the canonical Auth0 docs linked under [Prerequisites](#prerequisites).
+
+<Frame caption="Passkey enrollment — educational screen and OS biometric prompt rendered by the component">
+  <img src="/docs/images/universal-components/my-account/passkey-enrollment.png" alt="Passkey enrollment rendered inside the Auth Methods Management component" />
+</Frame>
+
+## Prerequisites
+
+<Steps>
+  <Step title="Enable passkeys on your Auth0 database connection">
+    Follow [Configure Passkeys](/docs/authenticate/database-connections/passkeys) for tenant-side setup. Passkeys are configured per database connection, not globally.
+  </Step>
+  <Step title="Complete the Universal Components setup">
+    Follow [Build a Self-Service Account Security Interface](/docs/get-started/universal-components/my-account/build-account-security) to install the SDK, configure your Auth0 tenant, and initialize the SDK. Set `PasskeysConfiguration` (iOS) or `PasskeyConfiguration` (Android) on the SDK initializer if your integration needs a specific connection or linked identity.
+  </Step>
+  <Step title="Complete the platform-level app setup below">
+    Unlike other factors, passkeys require your app to prove ownership of the Auth0 domain at the OS level. See [Platform setup](#platform-setup).
+  </Step>
+</Steps>
+
+## Platform setup
+
+Passkeys bind to the relying-party domain Auth0 issues credentials for — typically your Auth0 tenant domain or [custom domain](/docs/customize/custom-domains). The platform verifies this binding through Apple Associated Domains (iOS) or Android Digital Asset Links.
+
+<Tabs>
+
+<Tab title="iOS">
+
+<Steps>
+  <Step title="Add the Associated Domains entitlement">
+    In Xcode, open your target's **Signing & Capabilities** and add **Associated Domains**. Add the entry:
+
+    ```
+    webcredentials:YOUR_AUTH0_DOMAIN
+    ```
+
+    For example: `webcredentials:your-tenant.auth0.com`. If you use a custom domain, use that instead.
+  </Step>
+  <Step title="Register your app bundle ID in the Auth0 Dashboard">
+    Add your app's bundle ID under **Auth0 Dashboard → Authentication → Database → {connection} → Passkey settings → Allowed iOS Applications**. Auth0 publishes the `apple-app-site-association` file at `/.well-known/apple-app-site-association` on your domain automatically and includes every registered bundle ID.
+  </Step>
+  <Step title="Minimum iOS version">
+    The component hides the Passkey option on devices running iOS < 16.6, macOS < 13.5, or visionOS < 1.0.
+  </Step>
+</Steps>
+
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+  Apple's <a href="https://developer.apple.com/documentation/xcode/supporting-associated-domains">Supporting associated domains</a> guide is the authoritative reference for entitlements and the AASA file. Validate your AASA with the <a href="https://app-site-association.cdn-apple.com">AASA Validator</a> before testing on-device.
+</Callout>
+
+</Tab>
+
+<Tab title="Android">
+
+<Steps>
+  <Step title="Confirm AndroidX Credentials is resolved">
+    The Universal Components SDK depends on `androidx.credentials:credentials:1.5.0+` transitively. Verify with `./gradlew app:dependencies` if you see credential-manager errors.
+  </Step>
+  <Step title="Register your app package + signing fingerprints in the Auth0 Dashboard">
+    Add your package name and SHA-256 signing fingerprints under **Auth0 Dashboard → Authentication → Database → {connection} → Passkey settings → Allowed Android Applications**. Auth0 serves `/.well-known/assetlinks.json` on your domain automatically and includes every registered app.
+
+    Obtain fingerprints with:
+
+    ```bash
+    keytool -list -v -keystore /path/to/keystore -alias YOUR_ALIAS | grep SHA256
+    ```
+
+    For Play App Signing, copy the fingerprint from **Play Console → Setup → App signing**.
+  </Step>
+  <Step title="Minimum Android version">
+    Platform-credential passkeys require Android 14+ (API 34+) for the full Credential Manager experience. On Android 9–13 (API 28–33), passkeys sync through Google Password Manager on devices with up-to-date Play Services. Below API 28, the component hides the Passkey option.
+  </Step>
+</Steps>
+
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+  Google's <a href="https://developer.android.com/identity/sign-in/credential-manager">Credential Manager</a> guide and the <a href="https://developers.google.com/digital-asset-links/tools/generator">Digital Asset Links tester</a> are the authoritative references. Validate your `assetlinks.json` before testing on-device.
+</Callout>
+
+</Tab>
+
+</Tabs>
+
+## Customization
+
+The Passkey educational and status screens inherit the component's active theme. The biometric prompt itself is rendered by the OS and cannot be themed.
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Token</th>
+      <th>Effect on Passkey screens</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>background.accent</code> / <code>backgroundAccent</code></td>
+      <td>Accent color for the passkey educational illustration</td>
+    </tr>
+    <tr>
+      <td><code>background.primary</code> / <code>backgroundPrimary</code></td>
+      <td>Add Passkey button background</td>
+    </tr>
+    <tr>
+      <td><code>text.onPrimary</code> / <code>textOnPrimary</code></td>
+      <td>Add Passkey button label</td>
+    </tr>
+    <tr>
+      <td><code>text.bold</code> / <code>textBold</code></td>
+      <td>Headline and explainer copy</td>
+    </tr>
+    <tr>
+      <td><code>radius.button</code> / <code>shapes.large</code></td>
+      <td>Button corner radius</td>
+    </tr>
+  </tbody>
+</table>
+
+For the full token catalog, see [Customize Style and Themes](/docs/get-started/universal-components/native/native-theming).
+
+## SDK limitations
+
+- **Passkeys can only be enrolled from inside the Auth Methods Management component.** There is no public SwiftUI or Composable API to trigger a standalone passkey enrollment from elsewhere in your app. Post-login "save a passkey" upsell prompts are not supported today. Track [`ui-components-ios`](https://github.com/auth0/ui-components-ios/issues) and [`universal-components-android`](https://github.com/auth0/universal-components-android/issues) for updates.
+- **Removing a passkey in the component does not purge the OS credential store.** The enrolled passkey detaches from the Auth0 account, but the private credential remains in iCloud Keychain (iOS) or Google Password Manager (Android) until the user removes it from the OS-level credential manager.
+- **Android's `PasskeyEnableScreen` is informational only.** It is publicly callable, but it renders a static educational card — the `onEnableClick` callback is delegated to you. The actual enrollment logic lives inside the component's internal `PasskeyViewModel` and is not publicly exposed.
+- **Attestation conveyance is not surfaced.** The SDK does not let the caller select attestation policy (`none` / `indirect` / `direct`) or enumerate authenticator transports — it uses the Auth0 tenant's configured WebAuthn policy.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card
+    title="Auth Methods Management"
+    icon="shield-halved"
+    href="/docs/get-started/universal-components/my-account/auth-methods-management"
+  >
+    Auth Methods Management component reference and the full list of supported factors.
+  </Card>
+  <Card
+    title="Build a Self-Service Account Security Interface"
+    icon="gear"
+    href="/docs/get-started/universal-components/my-account/build-account-security"
+  >
+    `PasskeysConfiguration` (iOS) / `PasskeyConfiguration` (Android) initializer options.
+  </Card>
+</CardGroup>

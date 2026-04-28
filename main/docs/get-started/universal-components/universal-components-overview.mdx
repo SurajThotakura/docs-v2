@@ -21,6 +21,31 @@ With Universal Components, you can:
 - Customize the login experience with your own branding and themes
 - Enable users to review and update their account information. This includes allowing users to choose their authentication and account recovery methods.
 
+## Choose your surface
+
+Universal Components are grouped by the Auth0 API they target and the platform you're building on.
+
+<CardGroup cols={2}>
+  <Card
+    title="My Organization (Web)"
+    icon="building"
+    href="/docs/get-started/universal-components/my-organization/build-delegated-admin"
+  >
+    React, Next.js, and shadcn components for delegated admin — let your business customers manage their own Auth0 Organizations, Single Sign-On providers, and domains.
+  </Card>
+  <Card
+    title="My Account (iOS & Android)"
+    icon="mobile"
+    href="/docs/get-started/universal-components/my-account/build-account-security"
+  >
+    SwiftUI and Jetpack Compose components for end-user self-service — let users enroll, review, and remove MFA factors, passkeys, and recovery codes from within your app.
+  </Card>
+</CardGroup>
+
+<Callout icon="file-lines" color="#0EA5E9" iconType="regular">
+  Installing the native SDK? Start with [Install the Native SDK](/docs/get-started/universal-components/native/native-overview) for iOS (Swift Package Manager, CocoaPods, Carthage) and Android (Gradle).
+</Callout>
+
 ## How it works
 
 Universal Components acts as the presentation layer between your application and Auth0, coordinating communication between your application, the [My Account](/docs/manage-users/my-account-api) and [My Organization](/docs/api/myorganization) APIs, and Auth0 SDKs.
@@ -357,7 +382,7 @@ See complete working examples in the sample applications.
     icon="play"
     href="https://universal-components-saastart.vercel.app/"
   >
-    See My Organisation Components in action in the live reference B2B SaaS app
+    See My Organization Components in action in the live reference B2B SaaS app
   </Card>
 
    <Card
